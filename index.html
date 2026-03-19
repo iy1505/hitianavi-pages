@@ -22,28 +22,18 @@
     <style>
         body { font-family: 'Noto Sans JP', sans-serif; position: fixed; width: 100%; height: 100%; overflow: hidden; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
-        
-        /* スマホ用ドロワーの調整 */
         @media (max-width: 768px) {
-            #sidebar {
-                height: 85vh;
-                transform: translateY(calc(85vh - 120px)); /* ハンドルとモード切替だけ見える状態 */
-                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            #sidebar.open { transform: translateY(0); }
+            #sidebar { height: 95vh; transform: translateY(calc(95vh - 120px)); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); user-select: none; }
+            #sidebar.dragging { transition: none; }
         }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .custom-scroll { -webkit-overflow-scrolling: touch; }
-        
-        /* Leafletの著作権表示を調整 */
         .leaflet-control-attribution { font-size: 8px !important; }
-        .leaflet-bottom.leaflet-left { bottom: 140px; } /* ドロワーに被らないように */
+        .leaflet-bottom.leaflet-left { bottom: 140px; }
     </style>
 </head>
-<body class="bg-slate-100">
+<body class="bg-slate-100 text-slate-800">
 
-    <!-- Header (Z-index 50) -->
     <header class="fixed top-4 left-4 right-4 z-[50] flex items-center justify-between bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-white/20">
         <div class="flex items-center gap-2">
             <div class="bg-brand-500 text-white w-9 h-9 rounded-xl flex items-center justify-center shadow-md">
@@ -54,91 +44,89 @@
                 <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Hita City Map</p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <button id="gps-btn" class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center border border-slate-100">
-                <i class="fas fa-location-arrow text-sm"></i>
-            </button>
-        </div>
+        <button id="gps-btn" class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center border border-slate-100">
+            <i class="fas fa-location-arrow text-sm"></i>
+        </button>
     </header>
 
-    <!-- Map (Z-index 1) -->
     <div id="map"></div>
 
-    <!-- Sidebar/Drawer (Z-index 100) -->
     <aside id="sidebar" class="fixed bottom-0 left-0 right-0 md:top-24 md:left-6 md:bottom-6 md:w-[380px] md:h-auto z-[100] flex flex-col pointer-events-none">
-        
-        <!-- Drawer Handle (Mobile Only) -->
         <div id="drawer-handle" class="md:hidden w-full flex justify-center p-3 pointer-events-auto bg-transparent">
             <div class="w-12 h-1.5 bg-slate-400/50 rounded-full shadow-sm"></div>
         </div>
 
-        <!-- Content Panel -->
         <div class="bg-white/95 backdrop-blur-xl rounded-t-[32px] md:rounded-[24px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-2xl border border-white/20 flex-1 flex flex-col overflow-hidden pointer-events-auto">
             
-            <!-- Mode Switch -->
             <div class="p-3 grid grid-cols-2 gap-2 bg-slate-50/50">
                 <label class="cursor-pointer">
                     <input type="radio" name="mode" value="tourism" class="hidden peer" checked>
-                    <div class="py-2.5 rounded-xl text-center text-xs font-bold border-2 border-transparent peer-checked:border-brand-500 peer-checked:bg-brand-500 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all">
-                        観光モード
-                    </div>
+                    <div class="py-2.5 rounded-xl text-center text-xs font-bold border-2 border-transparent peer-checked:border-brand-500 peer-checked:bg-brand-500 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all">観光モード</div>
                 </label>
                 <label class="cursor-pointer">
                     <input type="radio" name="mode" value="disaster" class="hidden peer">
-                    <div class="py-2.5 rounded-xl text-center text-xs font-bold border-2 border-transparent peer-checked:border-red-600 peer-checked:bg-red-600 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all">
-                        防災モード
-                    </div>
+                    <div class="py-2.5 rounded-xl text-center text-xs font-bold border-2 border-transparent peer-checked:border-red-600 peer-checked:bg-red-600 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all">防災モード</div>
                 </label>
             </div>
 
-            <!-- Tabs -->
             <div class="flex border-b border-slate-100 bg-white">
                 <button id="tab-btn-list" data-tab="list" class="flex-1 py-3 text-xs font-bold text-brand-500 border-b-2 border-brand-500 transition-all">場所をさがす</button>
-                <button id="tab-btn-info" data-tab="info" class="flex-1 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent transition-all">AIプラン</button>
+                <button id="tab-btn-info" data-tab="info" class="flex-1 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent transition-all">決定ルート・AI</button>
                 <button id="tab-btn-extra" data-tab="extra" class="flex-1 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent transition-all">情報</button>
             </div>
 
-            <!-- Search & Filters (Sticky Area) -->
             <div id="sticky-filter" class="p-4 bg-white border-b border-slate-50 space-y-3">
                 <div class="relative">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                     <input type="text" id="search-input" class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm outline-none focus:ring-2 focus:ring-brand-500" placeholder="キーワードで検索...">
                 </div>
-                
                 <div id="category-chips" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar custom-scroll"></div>
-
                 <div class="flex items-center justify-between gap-3 pt-1">
                     <div id="selected-count" class="text-[9px] font-black text-brand-500 bg-brand-50 px-2.5 py-1 rounded-lg">0 か所選択</div>
-                    <button id="optimize-btn" class="flex-1 bg-brand-500 text-white py-2.5 rounded-xl text-xs font-bold shadow-md hover:bg-brand-600 active:scale-95 transition-all">
-                        効率よく回る順番にする
+                    <button id="optimize-btn" class="flex-1 bg-brand-500 text-white py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 active:scale-95 transition-all">
+                        ルートを決定する
                     </button>
                 </div>
             </div>
 
-            <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-4 pb-20" id="tab-content-container">
                 <div id="pane-list" class="space-y-3">
                     <div id="spot-list" class="space-y-3"></div>
                 </div>
 
                 <div id="pane-info" class="hidden space-y-6">
-                    <div id="route-info" class="hidden bg-brand-50 p-5 rounded-3xl border border-brand-100 shadow-sm">
-                        <h3 class="text-brand-500 font-bold text-sm mb-3">おすすめの順番</h3>
-                        <div id="route-stats" class="text-xs text-slate-600 space-y-2 mb-4"></div>
-                        <button id="gmaps-link-btn" class="w-full bg-green-600 text-white py-3 rounded-2xl text-sm font-bold shadow-md"><i class="fab fa-google mr-2"></i>Googleマップで案内</button>
+                    <div id="route-info" class="hidden bg-brand-50 p-5 rounded-[32px] border border-brand-100 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-brand-500 font-black text-sm">決定したルート</h3>
+                            <span class="bg-white px-2 py-1 rounded-lg text-[9px] font-bold text-slate-400 border border-slate-100">OPTIMIZED</span>
+                        </div>
+                        <div id="route-stats" class="text-xs text-slate-600 space-y-2"></div>
+                        
+                        <div class="grid grid-cols-2 gap-2 pt-2">
+                            <button id="add-more-btn" class="bg-white text-brand-500 border border-brand-100 py-3 rounded-2xl text-[11px] font-bold shadow-sm active:scale-95 transition-all">
+                                <i class="fas fa-plus-circle mr-1"></i>場所を追加
+                            </button>
+                            <button id="reset-route-btn" class="bg-white text-red-500 border border-red-50 px-2 py-3 rounded-2xl text-[11px] font-bold shadow-sm active:scale-95 transition-all">
+                                <i class="fas fa-trash-alt mr-1"></i>リセット
+                            </button>
+                        </div>
+                        
+                        <button id="gmaps-link-btn" class="w-full bg-green-600 text-white py-4 rounded-[20px] text-sm font-black shadow-lg shadow-green-600/20 active:scale-[0.98] transition-all">
+                            <i class="fab fa-google mr-2 text-lg"></i>Googleマップで出発！
+                        </button>
                     </div>
 
-                    <section class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
-                        <h3 id="ai-title-text" class="text-slate-700 font-bold text-sm mb-4 flex items-center gap-2">AI観光ガイド</h3>
+                    <section class="bg-slate-50 p-5 rounded-[32px] border border-slate-100">
+                        <h3 id="ai-title-text" class="text-slate-700 font-bold text-sm mb-4">AI観光ガイド</h3>
                         <div class="space-y-4">
-                            <input type="password" id="gemini-key" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="Gemini API Key">
+                            <input type="password" id="gemini-key" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm" placeholder="Gemini API Key">
                             <div class="grid grid-cols-2 gap-2">
-                                <input type="text" id="ai-input-1" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="滞在時間">
-                                <input type="text" id="ai-input-2" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="予算">
+                                <input type="text" id="ai-input-1" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm" placeholder="時間">
+                                <input type="text" id="ai-input-2" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm" placeholder="予算">
                             </div>
                             <div id="ai-interests" class="flex flex-wrap gap-2"></div>
                             <textarea id="ai-request" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm h-24 resize-none" placeholder="その他の要望"></textarea>
-                            <button id="ai-btn" class="w-full bg-brand-accent text-white py-3.5 rounded-2xl text-sm font-bold">プランを作成</button>
+                            <button id="ai-btn" class="w-full bg-brand-accent text-white py-4 rounded-[20px] text-sm font-black shadow-lg shadow-brand-accent/20">AIプランを作成</button>
                             <div id="ai-response" class="hidden text-xs leading-relaxed bg-white p-5 rounded-3xl border border-slate-100 max-h-80 overflow-y-auto"></div>
                         </div>
                     </section>
@@ -149,29 +137,25 @@
                 </div>
             </div>
 
-            <!-- Footer (Fixed Action) -->
             <div class="p-4 bg-white border-t border-slate-50 text-center">
-                <button id="clear-btn" class="text-[10px] font-black text-slate-400 hover:text-red-500 uppercase tracking-widest">
-                    選びなおす（リセット）
+                <button id="clear-btn" class="text-[10px] font-black text-slate-300 hover:text-red-500 uppercase tracking-[0.3em] transition-all">
+                    SELECT RESET
                 </button>
             </div>
         </div>
     </aside>
 
-    <!-- Modal (Z-index 2000) -->
     <div id="detail-modal" class="fixed inset-0 z-[2000] flex items-center justify-center px-6 hidden">
         <div id="modal-overlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
-        <div class="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden relative transform transition-all p-6">
+        <div class="bg-white w-full max-w-sm rounded-[40px] shadow-2xl overflow-hidden relative transform transition-all p-8">
             <div class="flex justify-between items-start mb-4">
-                <h3 id="detail-title" class="text-brand-500 font-bold text-lg leading-tight"></h3>
-                <button id="close-modal" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h3 id="detail-title" class="text-brand-500 font-black text-xl leading-tight"></h3>
+                <button id="close-modal" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
-            <div class="bg-slate-50 p-4 rounded-2xl mb-6 max-h-60 overflow-y-auto">
-                <p id="detail-desc" class="text-sm text-slate-600 leading-relaxed"></p>
+            <div class="bg-slate-50 p-5 rounded-3xl mb-8 max-h-64 overflow-y-auto">
+                <p id="detail-desc" class="text-sm text-slate-600 leading-relaxed font-medium"></p>
             </div>
-            <button id="modal-select-btn" class="w-full py-4 rounded-2xl text-sm font-bold text-white shadow-lg transition-all active:scale-95"></button>
+            <button id="modal-select-btn" class="w-full py-4 rounded-[20px] text-sm font-black text-white shadow-xl transition-all active:scale-95"></button>
         </div>
     </div>
 
