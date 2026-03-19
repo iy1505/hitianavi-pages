@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>日田なび | Hita City Guide</title>
+    <title>日田なび | 観光・防災マップ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,18 +33,16 @@
     <link rel="stylesheet" href="css/style.css" />
     <style>
         body { font-family: 'Noto Sans JP', sans-serif; }
-        .map-inset-shadow { box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
-        /* モバイルでのマップ全画面対応 */
         #map { height: 100vh; width: 100%; z-index: 1; }
-        /* カスタムスクロールバー */
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 overflow-hidden">
+<body class="bg-slate-50 overflow-hidden text-slate-800">
 
-    <!-- Header (Floating) -->
+    <!-- Header -->
     <header class="fixed top-4 left-4 right-4 z-[1000] flex items-center justify-between bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-white/20">
         <div class="flex items-center gap-2">
             <div class="bg-brand-500 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md">
@@ -52,11 +50,11 @@
             </div>
             <div>
                 <h1 class="text-brand-500 font-bold text-lg leading-none">日田なび</h1>
-                <p class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Hita City Guide</p>
+                <p class="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Hita City Map</p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <button id="gps-btn" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 hover:bg-brand-500 hover:text-white transition-all duration-300 flex items-center justify-center shadow-sm">
+            <button id="gps-btn" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center">
                 <i class="fas fa-location-arrow text-sm"></i>
             </button>
             <button id="sidebar-toggle" class="md:hidden w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center">
@@ -65,147 +63,140 @@
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- Main -->
     <main class="relative w-full h-screen">
-        <!-- Map Area -->
         <div id="map" class="absolute inset-0"></div>
 
-        <!-- Content Sidebar (Responsive Drawer) -->
-        <aside id="sidebar" class="fixed bottom-0 left-0 right-0 md:top-24 md:left-6 md:bottom-6 md:w-[380px] z-[1001] transition-transform duration-500 ease-in-out translate-y-[70%] md:translate-y-0 flex flex-col pointer-events-none">
+        <!-- Sidebar / Drawer -->
+        <aside id="sidebar" class="fixed bottom-0 left-0 right-0 md:top-24 md:left-6 md:bottom-6 md:w-[380px] z-[1001] transition-transform duration-500 ease-in-out translate-y-[75%] md:translate-y-0 flex flex-col pointer-events-none">
             
-            <!-- Handle (Mobile only) -->
-            <div id="drawer-handle" class="md:hidden w-full flex justify-center p-3 pointer-events-auto cursor-pointer">
-                <div class="w-12 h-1.5 bg-slate-300 rounded-full shadow-inner"></div>
+            <!-- Handle (Mobile) -->
+            <div id="drawer-handle" class="md:hidden w-full flex justify-center p-4 pointer-events-auto cursor-pointer">
+                <div class="w-16 h-1.5 bg-slate-300 rounded-full shadow-inner"></div>
             </div>
 
-            <!-- Panel Content -->
             <div class="bg-white/95 backdrop-blur-xl rounded-t-[32px] md:rounded-[24px] shadow-2xl border border-white/20 flex-1 flex flex-col overflow-hidden pointer-events-auto">
                 
                 <!-- Mode Switch -->
                 <div class="p-4 grid grid-cols-2 gap-2 bg-slate-50/50">
                     <label class="cursor-pointer">
                         <input type="radio" name="mode" value="tourism" class="hidden peer" checked>
-                        <div class="py-2 px-4 rounded-xl text-center text-sm font-bold border-2 border-transparent peer-checked:border-brand-500 peer-checked:bg-brand-500 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all duration-300">
-                            <i class="fas fa-camera mr-2"></i>観光モード
+                        <div class="py-2.5 px-4 rounded-xl text-center text-sm font-bold border-2 border-transparent peer-checked:border-brand-500 peer-checked:bg-brand-500 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all">
+                            <i class="fas fa-camera mr-2"></i>観光する
                         </div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="mode" value="disaster" class="hidden peer">
-                        <div class="py-2 px-4 rounded-xl text-center text-sm font-bold border-2 border-transparent peer-checked:border-red-600 peer-checked:bg-red-600 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all duration-300">
-                            <i class="fas fa-hospital mr-2"></i>防災モード
+                        <div class="py-2.5 px-4 rounded-xl text-center text-sm font-bold border-2 border-transparent peer-checked:border-red-600 peer-checked:bg-red-600 peer-checked:text-white text-slate-500 bg-white shadow-sm transition-all">
+                            <i class="fas fa-hospital mr-2"></i>避難・防災
                         </div>
                     </label>
                 </div>
 
                 <!-- Tabs -->
-                <div class="flex border-b border-slate-100">
-                    <button data-tab="list" class="flex-1 py-3 text-sm font-bold text-brand-500 border-b-2 border-brand-500 transition-all duration-300">スポット</button>
-                    <button data-tab="info" class="flex-1 py-3 text-sm font-medium text-slate-400 border-b-2 border-transparent hover:text-brand-500 transition-all">詳細・AI</button>
-                    <button data-tab="event" class="flex-1 py-3 text-sm font-medium text-slate-400 border-b-2 border-transparent hover:text-brand-500 transition-all">イベント</button>
+                <div class="flex border-b border-slate-100 bg-white">
+                    <button data-tab="list" class="flex-1 py-3 text-sm font-bold text-brand-500 border-b-2 border-brand-500 transition-all">場所をさがす</button>
+                    <button data-tab="info" class="flex-1 py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-all">AIガイド・詳細</button>
+                    <button data-tab="event" class="flex-1 py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-all">イベント</button>
                 </div>
 
-                <!-- Search & Filter (Sticky) -->
+                <!-- Search & Filters -->
                 <div class="p-4 bg-white border-b border-slate-50 space-y-3">
                     <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                        <input type="text" id="search-input" class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-brand-500 transition-all" placeholder="スポット名やキーワードで検索...">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="search-input" class="w-full pl-11 pr-4 py-3 bg-slate-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-brand-500 transition-all outline-none" placeholder="名前やキーワードで検索...">
                     </div>
                     
-                    <!-- Category Chips (Horizontal Scroll) -->
-                    <div id="category-chips" class="flex gap-2 overflow-x-auto pb-2 custom-scroll no-scrollbar">
-                        <!-- Chips will be generated here -->
-                    </div>
+                    <!-- Chips -->
+                    <div id="category-chips" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
 
                     <div class="flex items-center justify-between pt-1">
-                        <div id="selected-count" class="text-[10px] font-black text-brand-500 uppercase tracking-widest bg-brand-50 px-2 py-1 rounded-md">0 SELECTED</div>
-                        <button id="optimize-btn" class="bg-brand-500 text-white px-6 py-2 rounded-xl text-xs font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-600 active:scale-95 transition-all">
-                            <i class="fas fa-route mr-2"></i>ルートを最適化
+                        <div id="selected-count" class="text-[10px] font-black text-brand-500 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-100">0 か所選択中</div>
+                        <button id="optimize-btn" class="bg-brand-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-600 active:scale-95 transition-all">
+                            <i class="fas fa-route mr-2"></i>効率よく回る
                         </button>
                     </div>
                 </div>
 
-                <!-- Scrollable Area -->
+                <!-- Content Area -->
                 <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-3" id="tab-content-container">
-                    
-                    <!-- Spot List Pane -->
                     <div id="pane-list" class="space-y-3">
-                        <div id="spot-list"></div>
+                        <div id="spot-list" class="space-y-3"></div>
                     </div>
 
-                    <!-- Info/AI Pane -->
-                    <div id="pane-info" class="hidden space-y-6">
-                        <!-- Optimization Result -->
-                        <div id="route-info" class="hidden bg-brand-50 p-4 rounded-2xl border border-brand-100">
-                            <h3 class="text-brand-500 font-bold text-sm mb-3"><i class="fas fa-route mr-2"></i>最適化ルート結果</h3>
+                    <div id="pane-info" class="hidden space-y-6 pb-10">
+                        <!-- Route Result -->
+                        <div id="route-info" class="hidden bg-brand-50 p-5 rounded-3xl border border-brand-100">
+                            <h3 class="text-brand-500 font-bold text-sm mb-3"><i class="fas fa-magic mr-2"></i>おすすめの順番</h3>
                             <div id="route-stats" class="text-xs text-slate-600 space-y-2 mb-4"></div>
-                            <button id="gmaps-link-btn" class="w-full bg-green-600 text-white py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-green-700 transition-all">
-                                <i class="fab fa-google mr-2"></i>Google Mapでナビ開始
+                            <button id="gmaps-link-btn" class="w-full bg-green-600 text-white py-3 rounded-2xl text-sm font-bold shadow-md hover:bg-green-700 active:scale-[0.98] transition-all">
+                                <i class="fab fa-google mr-2"></i>Googleマップで案内
                             </button>
                         </div>
 
-                        <!-- Gemini AI -->
-                        <section class="bg-slate-50 p-4 rounded-2xl">
+                        <!-- AI Guide -->
+                        <section class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
                             <h3 class="text-slate-700 font-bold text-sm mb-4 flex items-center gap-2">
-                                <span class="bg-brand-accent text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px]"><i class="fas fa-robot"></i></span>
-                                AI観光コンシェルジュ
+                                <span class="bg-brand-accent text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] shadow-sm"><i class="fas fa-robot"></i></span>
+                                AI観光ガイド
                             </h3>
                             <div class="space-y-4">
-                                <input type="password" id="gemini-key" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Gemini API Key">
-                                
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div class="space-y-1">
-                                        <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Duration</label>
-                                        <input type="text" id="ai-time" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 3時間">
-                                    </div>
-                                    <div class="space-y-1">
-                                        <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Budget</label>
-                                        <input type="text" id="ai-budget" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 5千円">
-                                    </div>
-                                </div>
-
-                                <!-- Interest Categories -->
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Interests (Multiple OK)</label>
-                                    <div id="ai-interests" class="flex flex-wrap gap-2">
-                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="歴史">歴史・文化</button>
-                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="自然">自然・絶景</button>
-                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="グルメ">グルメ・食べ歩き</button>
-                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="温泉">温泉・癒やし</button>
-                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="体験">工芸・体験</button>
-                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="進撃の巨人">進撃の巨人</button>
-                                    </div>
-                                </div>
-
-                                <!-- Free Request -->
                                 <div class="space-y-1">
-                                    <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Special Requests</label>
-                                    <textarea id="ai-request" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm h-20 resize-none outline-none focus:ring-2 focus:ring-brand-500" placeholder="例: 子供連れで楽しめる、SNS映えスポット優先、ランチは和食がいい、など"></textarea>
+                                    <label class="text-[10px] font-black text-slate-400 ml-1 uppercase">Gemini API Key</label>
+                                    <input type="password" id="gemini-key" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="キーを入力してください">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-black text-slate-400 ml-1">滞在時間</label>
+                                        <input type="text" id="ai-time" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 3時間">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-black text-slate-400 ml-1">予算</label>
+                                        <input type="text" id="ai-budget" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 5千円">
+                                    </div>
                                 </div>
 
-                                <button id="ai-btn" class="w-full bg-brand-accent text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-accent/20 hover:opacity-90 active:scale-[0.98] transition-all">
-                                    パーソナライズプランを生成
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 ml-1">好きなもの（複数OK）</label>
+                                    <div id="ai-interests" class="flex flex-wrap gap-2">
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="歴史">歴史・文化</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="自然">自然・絶景</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="グルメ">グルメ</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="温泉">温泉</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="体験">工芸・体験</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="進撃の巨人">進撃の巨人</button>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-black text-slate-400 ml-1">その他の要望</label>
+                                    <textarea id="ai-request" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm h-24 resize-none outline-none focus:ring-2 focus:ring-brand-500" placeholder="例: 子供が喜ぶ場所、映える場所、ランチは和食など"></textarea>
+                                </div>
+
+                                <button id="ai-btn" class="w-full bg-brand-accent text-white py-3.5 rounded-2xl text-sm font-bold shadow-lg shadow-brand-accent/30 hover:opacity-90 active:scale-[0.98] transition-all">
+                                    AIにおまかせプラン作成
                                 </button>
-                                <div id="ai-response" class="hidden text-xs text-slate-600 leading-relaxed bg-white p-5 rounded-2xl border border-slate-100 max-h-80 overflow-y-auto custom-scroll shadow-inner"></div>
+                                <div id="ai-response" class="hidden text-xs text-slate-600 leading-relaxed bg-white p-5 rounded-3xl border border-slate-100 max-h-96 overflow-y-auto custom-scroll shadow-inner"></div>
                             </div>
                         </section>
 
                         <!-- Detail View -->
-                        <div id="spot-detail-view" class="hidden bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                            <h3 id="detail-title" class="text-brand-500 font-bold text-lg mb-2"></h3>
+                        <div id="spot-detail-view" class="hidden bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                            <h3 id="detail-title" class="text-brand-500 font-bold text-lg mb-3"></h3>
                             <p id="detail-desc" class="text-sm text-slate-600 leading-relaxed"></p>
                         </div>
                     </div>
 
-                    <!-- Event Pane -->
                     <div id="pane-event" class="hidden space-y-4">
                         <div id="event-list"></div>
                     </div>
                 </div>
 
-                <!-- Footer Action (Selected Clear) -->
+                <!-- Footer -->
                 <div class="p-4 bg-white border-t border-slate-50">
-                    <button id="clear-btn" class="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-all uppercase tracking-widest">
-                        Selection Clear
+                    <button id="clear-btn" class="w-full py-2.5 text-[10px] font-black text-slate-400 hover:text-red-500 transition-all uppercase tracking-[0.2em]">
+                        選びなおす（リセット）
                     </button>
                 </div>
             </div>
