@@ -105,20 +105,23 @@
                 </div>
 
                 <!-- Search & Filter (Sticky) -->
-                <div class="p-4 bg-white border-b border-slate-50">
-                    <div class="relative mb-3">
+                <div class="p-4 bg-white border-b border-slate-50 space-y-3">
+                    <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                        <input type="text" id="search-input" class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-brand-500 transition-all" placeholder="スポット名で検索...">
+                        <input type="text" id="search-input" class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-brand-500 transition-all" placeholder="スポット名やキーワードで検索...">
                     </div>
-                    <div class="flex gap-2">
-                        <select id="category-filter" class="flex-1 bg-slate-100 border-none rounded-xl text-xs py-2 focus:ring-2 focus:ring-brand-500">
-                            <option value="all">すべてのカテゴリー</option>
-                        </select>
-                        <button id="optimize-btn" class="bg-brand-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-brand-600 active:scale-95 transition-all">
-                            <i class="fas fa-magic mr-1"></i>最適化
+                    
+                    <!-- Category Chips (Horizontal Scroll) -->
+                    <div id="category-chips" class="flex gap-2 overflow-x-auto pb-2 custom-scroll no-scrollbar">
+                        <!-- Chips will be generated here -->
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <div id="selected-count" class="text-[10px] font-black text-brand-500 uppercase tracking-widest bg-brand-50 px-2 py-1 rounded-md">0 SELECTED</div>
+                        <button id="optimize-btn" class="bg-brand-500 text-white px-6 py-2 rounded-xl text-xs font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-600 active:scale-95 transition-all">
+                            <i class="fas fa-route mr-2"></i>ルートを最適化
                         </button>
                     </div>
-                    <div id="selected-count" class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-tighter text-right">0 SPOTS SELECTED</div>
                 </div>
 
                 <!-- Scrollable Area -->
@@ -146,16 +149,43 @@
                                 <span class="bg-brand-accent text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px]"><i class="fas fa-robot"></i></span>
                                 AI観光コンシェルジュ
                             </h3>
-                            <div class="space-y-3">
-                                <input type="password" id="gemini-key" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" placeholder="Gemini API Key">
+                            <div class="space-y-4">
+                                <input type="password" id="gemini-key" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Gemini API Key">
+                                
                                 <div class="grid grid-cols-2 gap-2">
-                                    <input type="text" id="ai-time" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" placeholder="時間 (例: 3時間)">
-                                    <input type="text" id="ai-budget" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" placeholder="予算 (例: 5千円)">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Duration</label>
+                                        <input type="text" id="ai-time" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 3時間">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Budget</label>
+                                        <input type="text" id="ai-budget" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 5千円">
+                                    </div>
                                 </div>
-                                <button id="ai-btn" class="w-full bg-brand-accent text-white py-2.5 rounded-xl text-sm font-bold shadow-md hover:opacity-90 transition-all">
-                                    プランを生成する
+
+                                <!-- Interest Categories -->
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Interests (Multiple OK)</label>
+                                    <div id="ai-interests" class="flex flex-wrap gap-2">
+                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="歴史">歴史・文化</button>
+                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="自然">自然・絶景</button>
+                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="グルメ">グルメ・食べ歩き</button>
+                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="温泉">温泉・癒やし</button>
+                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="体験">工芸・体験</button>
+                                        <button class="interest-chip px-3 py-1 rounded-lg border border-slate-200 text-[11px] font-medium bg-white text-slate-500 transition-all hover:border-brand-500" data-value="進撃の巨人">進撃の巨人</button>
+                                    </div>
+                                </div>
+
+                                <!-- Free Request -->
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-400 ml-1 uppercase">Special Requests</label>
+                                    <textarea id="ai-request" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm h-20 resize-none outline-none focus:ring-2 focus:ring-brand-500" placeholder="例: 子供連れで楽しめる、SNS映えスポット優先、ランチは和食がいい、など"></textarea>
+                                </div>
+
+                                <button id="ai-btn" class="w-full bg-brand-accent text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-accent/20 hover:opacity-90 active:scale-[0.98] transition-all">
+                                    パーソナライズプランを生成
                                 </button>
-                                <div id="ai-response" class="hidden text-xs text-slate-600 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 max-h-60 overflow-y-auto custom-scroll"></div>
+                                <div id="ai-response" class="hidden text-xs text-slate-600 leading-relaxed bg-white p-5 rounded-2xl border border-slate-100 max-h-80 overflow-y-auto custom-scroll shadow-inner"></div>
                             </div>
                         </section>
 
