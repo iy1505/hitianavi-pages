@@ -1,0 +1,197 @@
+/* 
+ * Hita Navi - Modern Stylish Custom CSS
+ * Theme: Suigo (Water City) & Historical Blend
+ */
+
+:root {
+    --primary-color: #1b4353;     /* 深い水の色 */
+    --primary-hover: #2a6178;
+    --accent-color: #c89f5d;      /* 落ち着いた金色（歴史・和風） */
+    --danger-color: #d35400;      /* 落ち着いた赤（防災） */
+    --danger-hover: #e67e22;
+    --bg-color: #f4f7f6;
+    --sidebar-bg: #ffffff;
+    --text-main: #333333;
+    --text-muted: #777777;
+    --border-color: #e2e8f0;
+}
+
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-color);
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--primary-color) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+.navbar-brand {
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+/* Layout */
+#sidebar {
+    background-color: var(--sidebar-bg);
+    border-right: none;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+    z-index: 999;
+}
+
+/* Mode Switch Buttons */
+.mode-switch .btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.mode-switch .btn-outline-primary:hover,
+.mode-switch .btn-check:checked + .btn-outline-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+.mode-switch .btn-outline-danger {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+.mode-switch .btn-outline-danger:hover,
+.mode-switch .btn-check:checked + .btn-outline-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: white;
+}
+
+/* Spot Cards */
+.spot-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.spot-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+    border-color: #cbd5e1;
+}
+.spot-card.selected {
+    border-color: var(--primary-color);
+    background: #f0f7fa;
+    box-shadow: 0 5px 15px rgba(27, 67, 83, 0.15);
+}
+.spot-card h6 {
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+.spot-card .badge {
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+.btn-info {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white !important;
+}
+.btn-info:hover {
+    background-color: #b58d4a;
+    border-color: #b58d4a;
+}
+
+/* Tabs */
+.nav-tabs {
+    border-bottom: 2px solid var(--border-color);
+}
+#sidebarTabs .nav-link {
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+    padding-bottom: 10px;
+}
+#sidebarTabs .nav-link:hover {
+    color: var(--primary-color);
+}
+#sidebarTabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+    background: transparent;
+}
+
+/* Stats Box & AI Response */
+.stats-box, #ai-response, #spot-detail-view {
+    background: #f8fafc;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+#ai-response {
+    border-left: 4px solid var(--accent-color);
+}
+
+/* Scrollbar */
+#sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+#sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+#sidebar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+#sidebar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Map Elements */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+.leaflet-popup-content {
+    font-family: 'Noto Sans JP', sans-serif;
+    margin: 12px 15px;
+    font-size: 0.95rem;
+}
+.leaflet-popup-content b {
+    color: var(--primary-color);
+    font-size: 1.05rem;
+}
+
+.user-location-icon, .custom-div-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border-color: var(--border-color);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(27, 67, 83, 0.25);
+}

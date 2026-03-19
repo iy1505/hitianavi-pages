@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日田なび - Hita City Web Map</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        #app-container { flex: 1; display: flex; overflow: hidden; }
+        #sidebar { width: 350px; overflow-y: auto; padding: 15px; border-right: 1px solid #ddd; background: #f8f9fa; }
+        #map-container { flex: 1; position: relative; }
+        #map { height: 100%; width: 100%; }
+        .spot-card { cursor: pointer; border: 1px solid #eee; margin-bottom: 10px; padding: 10px; border-radius: 5px; background: white; transition: background 0.2s; }
+        .spot-card:hover { background: #f0f0f0; }
+        .spot-card.selected { border-color: #0d6efd; background: #e7f1ff; }
+        .mode-switch { margin-bottom: 15px; }
+        .badge-tourism { background-color: #0d6efd; }
+        .badge-disaster { background-color: #dc3545; }
+        .filter-section { margin-bottom: 15px; }
+        .stats-box { font-size: 0.9rem; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px; }
+        .btn-group-sm { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1"><i class="fas fa-map-marked-alt"></i> 日田なび <small class="text-muted" style="font-size: 0.6em;">Static Edition</small></span>
+            <div class="d-flex align-items-center">
+                <button id="gps-btn" class="btn btn-outline-light btn-sm me-2"><i class="fas fa-location-arrow"></i> GPS現在地</button>
+                <div id="weather-info" class="text-white-50 small"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="app-container">
+        <div id="sidebar">
+            <div class="mode-switch btn-group w-100" role="group">
+                <input type="radio" class="btn-check" name="mode" id="mode-tourism" value="tourism" checked>
+                <label class="btn btn-outline-primary" for="mode-tourism"><i class="fas fa-camera"></i> 観光モード</label>
+                
+                <input type="radio" class="btn-check" name="mode" id="mode-disaster" value="disaster">
+                <label class="btn btn-outline-danger" for="mode-disaster"><i class="fas fa-hospital"></i> 防災モード</label>
+            </div>
+
+            <div class="filter-section">
+                <input type="text" id="search-input" class="form-control mb-2" placeholder="🔍 スポット名で検索">
+                <select id="category-filter" class="form-select form-select-sm mb-2">
+                    <option value="all">すべてのカテゴリー</option>
+                </select>
+                <div id="selected-count" class="small text-muted mb-2">選択中: 0箇所</div>
+                <div class="btn-group w-100">
+                    <button id="optimize-btn" class="btn btn-primary btn-sm"><i class="fas fa-route"></i> 最適化ルート算出</button>
+                    <button id="clear-btn" class="btn btn-secondary btn-sm">クリア</button>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs nav-fill mb-3" id="sidebarTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active py-1" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-pane" type="button" role="tab">一覧</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-1" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab">詳細・AI</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-1" id="event-tab" data-bs-toggle="tab" data-bs-target="#event-pane" type="button" role="tab">イベント</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="sidebarTabContent">
+                <div class="tab-pane fade show active" id="list-pane" role="tabpanel">
+                    <div id="spot-list"></div>
+                </div>
+                <div class="tab-pane fade" id="info-pane" role="tabpanel">
+                    <div id="route-info" class="stats-box d-none">
+                        <h6><i class="fas fa-route"></i> 最適化ルート結果</h6>
+                        <div id="route-stats"></div>
+                        <button id="gmaps-link-btn" class="btn btn-success btn-sm w-100 mt-2">Google Mapで開く</button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>🤖 AIコンシェルジュ (Gemini)</h6>
+                        <div class="mb-2">
+                            <label class="form-label small">API Key:</label>
+                            <input type="password" id="gemini-key" class="form-control form-control-sm" placeholder="AI Studioのキーを入力">
+                            <div class="form-text x-small"><a href="https://aistudio.google.com/app/apikey" target="_blank" class="small">キー取得はこちら</a></div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small">滞在時間 / 予算:</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="ai-time" class="form-control" placeholder="例: 3時間">
+                                <input type="text" id="ai-budget" class="form-control" placeholder="例: 5000円">
+                            </div>
+                        </div>
+                        <button id="ai-btn" class="btn btn-info btn-sm w-100 text-white"><i class="fas fa-robot"></i> プランを提案</button>
+                        <div id="ai-response" class="small mt-2 p-2 bg-light rounded d-none" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                    
+                    <div id="spot-detail-view" class="d-none">
+                        <hr>
+                        <h6 id="detail-title"></h6>
+                        <p id="detail-desc" class="small"></p>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="event-pane" role="tabpanel">
+                    <div id="event-list" class="small"></div>
+                </div>
+            </div>
+        </div>
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- App Script -->
+    <script src="js/app.js"></script>
+</body>
+</html>
