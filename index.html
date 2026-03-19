@@ -4,30 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>日田なび | 観光・防災マップ</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#f0f7fa',
-                            100: '#e0eff5',
-                            500: '#1b4353',
-                            600: '#153644',
-                            accent: '#c89f5d',
-                        }
+                        brand: { 50: '#f0f7fa', 100: '#e0eff5', 500: '#1b4353', 600: '#153644', accent: '#c89f5d' }
                     }
                 }
             }
         }
     </script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Leaflet & Icons -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="css/style.css" />
@@ -40,7 +31,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 overflow-hidden text-slate-800">
+<body class="bg-slate-50 overflow-hidden text-slate-800 font-medium">
 
     <!-- Header -->
     <header class="fixed top-4 left-4 right-4 z-[1000] flex items-center justify-between bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-white/20">
@@ -70,7 +61,6 @@
         <!-- Sidebar / Drawer -->
         <aside id="sidebar" class="fixed bottom-0 left-0 right-0 md:top-24 md:left-6 md:bottom-6 md:w-[380px] z-[1001] transition-transform duration-500 ease-in-out translate-y-[75%] md:translate-y-0 flex flex-col pointer-events-none">
             
-            <!-- Handle (Mobile) -->
             <div id="drawer-handle" class="md:hidden w-full flex justify-center p-4 pointer-events-auto cursor-pointer">
                 <div class="w-16 h-1.5 bg-slate-300 rounded-full shadow-inner"></div>
             </div>
@@ -95,9 +85,9 @@
 
                 <!-- Tabs -->
                 <div class="flex border-b border-slate-100 bg-white">
-                    <button data-tab="list" class="flex-1 py-3 text-sm font-bold text-brand-500 border-b-2 border-brand-500 transition-all">場所をさがす</button>
-                    <button data-tab="info" class="flex-1 py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-all">AIガイド・詳細</button>
-                    <button data-tab="event" class="flex-1 py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-all">イベント</button>
+                    <button id="tab-btn-list" data-tab="list" class="flex-1 py-3 text-sm font-bold text-brand-500 border-b-2 border-brand-500 transition-all">場所をさがす</button>
+                    <button id="tab-btn-info" data-tab="info" class="flex-1 py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-all">AIプラン作成</button>
+                    <button id="tab-btn-extra" data-tab="extra" class="flex-1 py-3 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-all">イベント</button>
                 </div>
 
                 <!-- Search & Filters -->
@@ -107,7 +97,6 @@
                         <input type="text" id="search-input" class="w-full pl-11 pr-4 py-3 bg-slate-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-brand-500 transition-all outline-none" placeholder="名前やキーワードで検索...">
                     </div>
                     
-                    <!-- Chips -->
                     <div id="category-chips" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
 
                     <div class="flex items-center justify-between pt-1">
@@ -120,23 +109,23 @@
 
                 <!-- Content Area -->
                 <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-3" id="tab-content-container">
+                    <!-- Spot List -->
                     <div id="pane-list" class="space-y-3">
                         <div id="spot-list" class="space-y-3"></div>
                     </div>
 
+                    <!-- AI Plan -->
                     <div id="pane-info" class="hidden space-y-6 pb-10">
-                        <!-- Route Result -->
                         <div id="route-info" class="hidden bg-brand-50 p-5 rounded-3xl border border-brand-100">
-                            <h3 class="text-brand-500 font-bold text-sm mb-3"><i class="fas fa-magic mr-2"></i>おすすめの順番</h3>
+                            <h3 id="route-title" class="text-brand-500 font-bold text-sm mb-3"><i class="fas fa-magic mr-2"></i>おすすめの順番</h3>
                             <div id="route-stats" class="text-xs text-slate-600 space-y-2 mb-4"></div>
                             <button id="gmaps-link-btn" class="w-full bg-green-600 text-white py-3 rounded-2xl text-sm font-bold shadow-md hover:bg-green-700 active:scale-[0.98] transition-all">
                                 <i class="fab fa-google mr-2"></i>Googleマップで案内
                             </button>
                         </div>
 
-                        <!-- AI Guide -->
-                        <section class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
-                            <h3 class="text-slate-700 font-bold text-sm mb-4 flex items-center gap-2">
+                        <section id="ai-section" class="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                            <h3 id="ai-title-text" class="text-slate-700 font-bold text-sm mb-4 flex items-center gap-2">
                                 <span class="bg-brand-accent text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] shadow-sm"><i class="fas fa-robot"></i></span>
                                 AI観光ガイド
                             </h3>
@@ -148,30 +137,27 @@
                                 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="space-y-1">
-                                        <label class="text-[10px] font-black text-slate-400 ml-1">滞在時間</label>
-                                        <input type="text" id="ai-time" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 3時間">
+                                        <label id="ai-label-1" class="text-[10px] font-black text-slate-400 ml-1">滞在時間</label>
+                                        <input type="text" id="ai-input-1" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 3時間">
                                     </div>
                                     <div class="space-y-1">
-                                        <label class="text-[10px] font-black text-slate-400 ml-1">予算</label>
-                                        <input type="text" id="ai-budget" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 5千円">
+                                        <label id="ai-label-2" class="text-[10px] font-black text-slate-400 ml-1">予算</label>
+                                        <input type="text" id="ai-input-2" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm" placeholder="例: 5千円">
                                     </div>
                                 </div>
 
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-black text-slate-400 ml-1">好きなもの（複数OK）</label>
+                                <div id="ai-interests-container" class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 ml-1">好きなジャンル（複数OK）</label>
                                     <div id="ai-interests" class="flex flex-wrap gap-2">
-                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="歴史">歴史・文化</button>
-                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="自然">自然・絶景</button>
-                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="グルメ">グルメ</button>
-                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="温泉">温泉</button>
-                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="体験">工芸・体験</button>
-                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all hover:border-brand-500" data-value="進撃の巨人">進撃の巨人</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all" data-value="歴史">歴史・文化</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all" data-value="自然">自然・絶景</button>
+                                        <button class="interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all" data-value="グルメ">グルメ</button>
                                     </div>
                                 </div>
 
                                 <div class="space-y-1">
-                                    <label class="text-[10px] font-black text-slate-400 ml-1">その他の要望</label>
-                                    <textarea id="ai-request" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm h-24 resize-none outline-none focus:ring-2 focus:ring-brand-500" placeholder="例: 子供が喜ぶ場所、映える場所、ランチは和食など"></textarea>
+                                    <label id="ai-label-request" class="text-[10px] font-black text-slate-400 ml-1">その他の要望</label>
+                                    <textarea id="ai-request" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm h-24 resize-none outline-none focus:ring-2 focus:ring-brand-500" placeholder="例: 子供連れ、映える場所など"></textarea>
                                 </div>
 
                                 <button id="ai-btn" class="w-full bg-brand-accent text-white py-3.5 rounded-2xl text-sm font-bold shadow-lg shadow-brand-accent/30 hover:opacity-90 active:scale-[0.98] transition-all">
@@ -180,16 +166,11 @@
                                 <div id="ai-response" class="hidden text-xs text-slate-600 leading-relaxed bg-white p-5 rounded-3xl border border-slate-100 max-h-96 overflow-y-auto custom-scroll shadow-inner"></div>
                             </div>
                         </section>
-
-                        <!-- Detail View -->
-                        <div id="spot-detail-view" class="hidden bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                            <h3 id="detail-title" class="text-brand-500 font-bold text-lg mb-3"></h3>
-                            <p id="detail-desc" class="text-sm text-slate-600 leading-relaxed"></p>
-                        </div>
                     </div>
 
-                    <div id="pane-event" class="hidden space-y-4">
-                        <div id="event-list"></div>
+                    <!-- Extra Info (Events / Hazard Map) -->
+                    <div id="pane-extra" class="hidden space-y-4 pb-10">
+                        <div id="extra-content-list" class="space-y-4"></div>
                     </div>
                 </div>
 
@@ -201,11 +182,30 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Detail Modal (New Pop-up) -->
+        <div id="detail-modal" class="fixed inset-0 z-[2000] flex items-center justify-center px-6 hidden pointer-events-none">
+            <div id="modal-overlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto"></div>
+            <div class="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden relative z-10 pointer-events-auto transform transition-all duration-300 scale-90 opacity-0" id="modal-container">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 id="detail-title" class="text-brand-500 font-bold text-xl leading-tight"></h3>
+                        <button id="close-modal" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 transition-all">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl mb-6">
+                        <p id="detail-desc" class="text-sm text-slate-600 leading-relaxed"></p>
+                    </div>
+                    <button id="modal-select-btn" class="w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all active:scale-95">
+                        <!-- Text changed via JS -->
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- App Script -->
     <script src="js/app.js"></script>
 </body>
 </html>
