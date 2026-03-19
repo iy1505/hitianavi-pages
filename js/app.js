@@ -18,7 +18,7 @@ const i18n = {
         ai_btn_tour: "AIにおまかせプラン作成", ai_btn_dis: "必要な備えを聞く", ai_req: "その他の要望", ai_req_tour: "例: 子供連れ、映える場所など",
         go_here: "ここへ行く", go_dis: "ここへ避難する", remove: "消す", add_modal_tour: "ここへ行く場所に追加", add_modal_dis: "ここを避難先に選ぶ",
         credit: "created by 大分県立日田高校 79回生 SS情報班", subtitle: "Concierge Map",
-        history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃", food: "食料", hygiene: "衛生", blackout: "停電",
+        history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", sightseeing: "観光地", camp: "キャンプ", sports: "スポーツ", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
         total_dist: "総距離", total_time: "合計時間", shelter_dist: "避難距離", shelter_time: "時間の目安", thinking: "AIがプランを練っています...", error: "エラーが発生しました: "
     },
     en: {
@@ -30,7 +30,7 @@ const i18n = {
         ai_btn_tour: "Create AI Plan", ai_btn_dis: "Ask for Supplies", ai_req: "Other requests", ai_req_tour: "e.g. Kid-friendly, Photo-genic",
         go_here: "Go Here", go_dis: "Evacuate Here", remove: "Remove", add_modal_tour: "Add to Plan", add_modal_dis: "Select as Shelter",
         credit: "created by Hita High School 79th SS Info Group", subtitle: "Concierge Map",
-        history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", food: "Food", hygiene: "Hygiene", blackout: "Blackout",
+        history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", sightseeing: "Sightseeing", camp: "Camp", sports: "Sports", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
         total_dist: "Distance", total_time: "Total Time", shelter_dist: "Distance", shelter_time: "Est. Time", thinking: "AI is thinking...", error: "Error occurred: "
     },
     zh: {
@@ -42,7 +42,7 @@ const i18n = {
         ai_btn_tour: "生成 AI 方案", ai_btn_dis: "咨询防灾用品", ai_req: "其他要求", ai_req_tour: "例如: 亲子游, 适合拍照",
         go_here: "去这里", go_dis: "去避难", remove: "删除", add_modal_tour: "加入行程", add_modal_dis: "选择为避难所",
         credit: "由 大分县立日田高中 第79届 SS信息组 创建", subtitle: "智能导览地图",
-        history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进击的巨人", food: "食物", hygiene: "卫生", blackout: "停电",
+        history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进击的巨人", culture: "文化", shopping: "购物", sightseeing: "观光", camp: "露营", sports: "运动", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
         total_dist: "总距离", total_time: "总时间", shelter_dist: "避难距离", shelter_time: "预计时间", thinking: "AI 正在思考...", error: "发生错误: "
     },
     ko: {
@@ -54,7 +54,7 @@ const i18n = {
         ai_btn_tour: "AI 플랜 생성", ai_btn_dis: "필요한 물품 묻기", ai_req: "기타 요청", ai_req_tour: "예: 아이 동반, 포토존",
         go_here: "여기로 가기", go_dis: "여기로 대피", remove: "삭제", add_modal_tour: "플랜에 추가", add_modal_dis: "대피소로 선택",
         credit: "오이타현립 히타 고등학교 79회 SS정보반 제작", subtitle: "컨시어지 맵",
-        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", food: "식량", hygiene: "위생", blackout: "정전",
+        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", sightseeing: "관광지", camp: "캠핑", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
         total_dist: "총 거리", total_time: "총 시간", shelter_dist: "대피 거리", shelter_time: "예상 시간", thinking: "AI가 생각 중입니다...", error: "오류가 발생했습니다: "
     }
 };
@@ -224,10 +224,11 @@ function setupTourismAIUI() {
     document.getElementById('ai-btn').innerText = t('ai_btn_tour');
     const interests = document.getElementById('ai-interests');
     interests.innerHTML = '';
-    ['history', 'nature', 'gourmet'].forEach(v => {
+    ['history', 'nature', 'gourmet', 'onsen', 'experience', 'culture', 'shopping', 'sightseeing', 'camp', 'sports', 'shingeki'].forEach(v => {
         const b = document.createElement('button');
         b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all';
         b.innerText = t(v);
+        b.setAttribute('data-value', v);
         b.onclick = () => {
             const c = 'bg-brand-500';
             b.classList.toggle(c); b.classList.toggle('text-white'); b.classList.toggle('border-transparent');
@@ -245,10 +246,11 @@ function setupDisasterAIUI() {
     document.getElementById('ai-btn').innerText = t('ai_btn_dis');
     const interests = document.getElementById('ai-interests');
     interests.innerHTML = '';
-    ['food', 'hygiene', 'blackout'].forEach(v => {
+    ['food', 'hygiene', 'blackout', 'medicine', 'clothing', 'baby', 'pet'].forEach(v => {
         const b = document.createElement('button');
         b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all';
         b.innerText = t(v);
+        b.setAttribute('data-value', v);
         b.onclick = () => {
             const c = 'bg-red-600';
             b.classList.toggle(c); b.classList.toggle('text-white'); b.classList.toggle('border-transparent');
