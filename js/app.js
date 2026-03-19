@@ -17,10 +17,16 @@ const i18n = {
         ai_in1_tour: "滞在時間", ai_in1_dis: "家族構成 (例: 大人2人)", ai_in2_tour: "予算", ai_in2_dis: "予算 (備蓄用)",
         ai_btn_tour: "AIにおまかせプラン作成", ai_btn_dis: "必要な備えを聞く", ai_req: "その他の要望", ai_req_tour: "例: 子供連れ、映える場所など",
         go_here: "ここへ行く", go_dis: "ここへ避難する", remove: "消す", add_modal_tour: "ここへ行く場所に追加", add_modal_dis: "ここを避難先に選ぶ",
-        credit: "created by 大分県立日田高校 79回生 SS情報班", subtitle: "Concierge Map",
+        credit: "created by 大分県立日田高校 79回生 SS情報班", subtitle: "日田市総合案内コンシェルジュ",
         history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", sightseeing: "観光地", camp: "キャンプ", sports: "スポーツ", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
         h_map: "ハザードマップ", d_portal: "防災ポータル", oita_bousai: "おおいた防災ポータル", emergency_contact: "緊急連絡先",
-        total_dist: "総距離", total_time: "合計時間", shelter_dist: "避難距離", shelter_time: "時間の目安", thinking: "AIがプランを練っています...", error: "エラーが発生しました: "
+        event_1: "天領日田おひなまつり", event_desc_1: "豆田町一帯で雛人形を展示する春の風物詩。江戸〜昭和の雛人形が並びます。",
+        event_2: "日田川開き観光祭", event_desc_2: "九州最大級の花火大会を含む日田最大の祭り。三隈川で鵜飼いも始まります。",
+        event_3: "日田祇園祭", event_desc_3: "300年以上の歴史を持つユネスコ無形文化遺産の祭り。豪華な山鉾が練り歩きます。",
+        event_4: "千年あかり", event_desc_4: "豆田町と花月川周辺を約3万本の竹灯籠が彩る幻想的な秋の夜のイベント。",
+        total_dist: "総距離", total_time: "合計時間", shelter_dist: "避難距離", shelter_time: "時間の目安", thinking: "AIがプランを練っています...", error: "エラーが発生しました: ",
+        selection_reset: "選択をすべてリセット",
+        header_title: "日田なび"
     },
     en: {
         find: "Find Spots", shelter: "Find Shelters", route_ai: "Route / AI", route: "Route", consult: "Consult", info: "Info", event: "Events",
@@ -30,10 +36,16 @@ const i18n = {
         ai_in1_tour: "Duration", ai_in1_dis: "Family (e.g. 2 adults)", ai_in2_tour: "Budget", ai_in2_dis: "Stock Budget",
         ai_btn_tour: "Create AI Plan", ai_btn_dis: "Ask for Supplies", ai_req: "Other requests", ai_req_tour: "e.g. Kid-friendly, Photo-genic",
         go_here: "Go Here", go_dis: "Evacuate Here", remove: "Remove", add_modal_tour: "Add to Plan", add_modal_dis: "Select as Shelter",
-        credit: "created by Hita High School 79th SS Info Group", subtitle: "Concierge Map",
+        credit: "created by Hita High School 79th SS Info Group", subtitle: "Hita City Concierge Map",
         history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", sightseeing: "Sightseeing", camp: "Camp", sports: "Sports", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
         h_map: "Hazard Map", d_portal: "Disaster Portal", oita_bousai: "Oita Disaster Portal", emergency_contact: "Emergency Contacts",
-        total_dist: "Distance", total_time: "Total Time", shelter_dist: "Distance", shelter_time: "Est. Time", thinking: "AI is thinking...", error: "Error occurred: "
+        event_1: "Hita Ohina-matsuri", event_desc_1: "A spring tradition in Mameda town displaying doll collections from Edo to Showa eras.",
+        event_2: "Hita Kawabiraki Festival", event_desc_2: "Hita's largest festival featuring major fireworks and cormorant fishing on Mikuma river.",
+        event_3: "Hita Gion Festival", event_desc_3: "UNESCO Intangible Cultural Heritage with 300 years of history and ornate floats.",
+        event_4: "Sennen-Akari", event_desc_4: "A mystical autumn night event with 30,000 bamboo lanterns lighting up Mameda town.",
+        total_dist: "Distance", total_time: "Total Time", shelter_dist: "Distance", shelter_time: "Est. Time", thinking: "AI is thinking...", error: "Error occurred: ",
+        selection_reset: "Selection Reset",
+        header_title: "Hita Navi"
     },
     zh: {
         find: "寻找地点", shelter: "寻找避难所", route_ai: "路线 / AI", route: "路线", consult: "咨询", info: "信息", event: "活动",
@@ -43,10 +55,16 @@ const i18n = {
         ai_in1_tour: "停留时间", ai_in1_dis: "家庭构成 (如: 2名成人)", ai_in2_tour: "预算", ai_in2_dis: "备货预算",
         ai_btn_tour: "生成 AI 方案", ai_btn_dis: "咨询防灾用品", ai_req: "其他要求", ai_req_tour: "例如: 亲子游, 适合拍照",
         go_here: "去这里", go_dis: "去避难", remove: "删除", add_modal_tour: "加入行程", add_modal_dis: "选择为避难所",
-        credit: "由 大分县立日田高中 第79届 SS信息组 创建", subtitle: "智能导览地图",
+        credit: "由 大分县立日田高中 第79届 SS信息组 创建", subtitle: "日田市智能导览地图",
         history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进击的巨人", culture: "文化", shopping: "购物", sightseeing: "观光", camp: "露营", sports: "运动", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
         h_map: "灾害地图", d_portal: "防灾门户", oita_bousai: "大分防灾门户", emergency_contact: "紧急联系方式",
-        total_dist: "总距离", total_time: "总时间", shelter_dist: "避难距离", shelter_time: "预计时间", thinking: "AI 正在思考...", error: "发生错误: "
+        event_1: "天领日田女儿节", event_desc_1: "豆田町一带展示江户至昭和时期女儿节人偶的春季特色活动。",
+        event_2: "日田川开观光祭", event_desc_2: "日田最大的节日，包括九州最大规模的烟花大会和三隈川鸬鹚捕鱼。",
+        event_3: "日田祇园祭", event_desc_3: "拥有300多年历史的联合国教科文组织非物质文化遗产节日，华丽的山鉾巡游。",
+        event_4: "千年灯火", event_desc_4: "约3万盏竹灯笼点亮豆田町和花月川周边的奇幻秋夜活动。",
+        total_dist: "总距离", total_time: "总时间", shelter_dist: "避难距离", shelter_time: "预计时间", thinking: "AI 正在思考...", error: "发生错误: ",
+        selection_reset: "重置所有选择",
+        header_title: "日田导览"
     },
     ko: {
         find: "장소 찾기", shelter: "대피소 찾기", route_ai: "결정 루트 / AI", route: "루트", consult: "상담", info: "정보", event: "이벤트",
@@ -56,10 +74,16 @@ const i18n = {
         ai_in1_tour: "체류 시간", ai_in1_dis: "가족 구성 (예: 성인 2명)", ai_in2_tour: "예산", ai_in2_dis: "비축 예산",
         ai_btn_tour: "AI 플랜 생성", ai_btn_dis: "필요한 물품 묻기", ai_req: "기타 요청", ai_req_tour: "예: 아이 동반, 포토존",
         go_here: "여기로 가기", go_dis: "여기로 대피", remove: "삭제", add_modal_tour: "플랜에 추가", add_modal_dis: "대피소로 선택",
-        credit: "오이타현립 히타 고등학교 79회 SS정보반 제작", subtitle: "컨시어지 맵",
+        credit: "오이타현립 히타 고등학교 79회 SS정보반 제작", subtitle: "히타시 컨시어지 맵",
         history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", sightseeing: "관광지", camp: "캠핑", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
         h_map: "해저드 맵", d_portal: "방재 포털", oita_bousai: "오이타 방재 포털", emergency_contact: "비상 연락처",
-        total_dist: "총 거리", total_time: "총 시간", shelter_dist: "대피 거리", shelter_time: "예상 시간", thinking: "AI가 생각 중입니다...", error: "오류가 발생했습니다: "
+        event_1: "텐료 히타 오히나마츠리", event_desc_1: "마메다마치 일대에서 히나 인형을 전시하는 봄의 풍물시. 에도~쇼와 시대 인형이 전시됩니다.",
+        event_2: "히타 카와비라키 관광제", event_desc_2: "규슈 최대 규모의 불꽃놀이를 포함한 히타 최대의 축제. 가마우지 낚시도 시작됩니다.",
+        event_3: "히타 기온 마츠리", event_desc_3: "300년 이상의 역사를 가진 유네스코 무형문화유산 축제. 화려한 야마보코가 행진합니다.",
+        event_4: "센넨아카리", event_desc_4: "마메다마치와 카게츠가와 주변을 약 3만 개의 대나무 등불이 수놓는 환상적인 가을 밤 이벤트.",
+        total_dist: "총 거리", total_time: "총 시간", shelter_dist: "대피 거리", shelter_time: "예상 시간", thinking: "AI가 생각 중입니다...", error: "오류가 발생했습니다: ",
+        selection_reset: "선택 리セット",
+        header_title: "히타나비"
     }
 };
 
@@ -174,7 +198,7 @@ function switchTab(tabName) {
 function updateUI() {
     const isMobile = window.innerWidth < 768;
     // Header
-    document.getElementById('header-title').innerText = currentLang === 'ja' ? "日田なび" : "Hita Navi";
+    document.getElementById('header-title').innerText = t('header_title');
     document.getElementById('header-credit').innerText = t('credit');
     document.getElementById('header-subtitle').innerText = t('subtitle');
     
@@ -196,7 +220,7 @@ function updateUI() {
     document.getElementById('search-input').placeholder = currentMode === 'tourism' ? t('search_tour') : t('search_dis');
     document.getElementById('optimize-btn').innerText = t('decide_tour');
     document.getElementById('selected-count').innerText = `${selectedSpots.length} ${currentMode === 'tourism' ? t('sel_tour') : t('sel_dis')}`;
-    document.getElementById('clear-btn').innerText = t('reset_all').toUpperCase();
+    document.getElementById('clear-btn').innerText = t('selection_reset').toUpperCase();
 
     if (currentMode === 'tourism') { setupTourismAIUI(); renderEvents(); }
     else { setupDisasterAIUI(); renderDisasterInfo(); }
@@ -270,6 +294,9 @@ function getSpotStyle(spot) {
         '歴史': { color: '#1b4353', icon: 'fa-landmark' }, '自然': { color: '#10b981', icon: 'fa-tree' },
         'グルメ': { color: '#f59e0b', icon: 'fa-utensils' }, '温泉': { color: '#06b6d4', icon: 'fa-hot-tub' },
         '体験': { color: '#ec4899', icon: 'fa-palette' }, '進撃の巨人': { color: '#dc2626', icon: 'fa-fist-raised' },
+        '文化': { color: '#8b5cf6', icon: 'fa-landmark' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
+        '観光地': { color: '#0ea5e9', icon: 'fa-camera-retro' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
+        'スポーツ': { color: '#d946ef', icon: 'fa-volleyball-ball' },
         '指定緊急避難場所': { color: '#dc2626', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
@@ -407,13 +434,17 @@ async function callGemini() {
 }
 
 function renderEvents() {
-    const events = [{ m: 2, n: "おひなまつり", keyword: "豆田町" }, { m: 5, n: "川開き観光祭", keyword: "花火" }, { m: 7, n: "日田祇園祭", keyword: "山鉾" }, { m: 11, n: "千年あかり", keyword: "竹灯籠" }];
+    const events = [
+        { m: 2, n: t('event_1'), d: t('event_desc_1') },
+        { m: 5, n: t('event_2'), d: t('event_desc_2') },
+        { m: 7, n: t('event_3'), d: t('event_desc_3') },
+        { m: 11, n: t('event_4'), d: t('event_desc_4') }
+    ];
     const c = document.getElementById('extra-content-list');
     c.innerHTML = `<h3 class="text-slate-700 font-bold text-sm mb-4 px-2">${currentLang==='ja'?'主要イベント':'Key Events'}</h3>`;
     events.forEach(ev => {
-        const rel = allData.tourism.find(s => s.説明.includes(ev.keyword)) || { 説明: "Traditional event." };
         const d = document.createElement('div'); d.className = 'p-5 bg-white rounded-[32px] border border-slate-100 shadow-sm space-y-2';
-        d.innerHTML = `<div class="flex items-center gap-4"><div class="bg-brand-50 text-brand-500 font-black w-10 h-10 rounded-xl flex-none flex items-center justify-center text-xs shadow-inner">${ev.m}${currentLang==='ja'?'月':'M'}</div><div class="text-sm font-black text-slate-800">${ev.n}</div></div><p class="text-[10px] text-slate-400 leading-relaxed font-medium">${rel.説明.split(/[。！!？?]/)[0]}。</p>`;
+        d.innerHTML = `<div class="flex items-center gap-4"><div class="bg-brand-50 text-brand-500 font-black w-10 h-10 rounded-xl flex-none flex items-center justify-center text-xs shadow-inner">${ev.m}${currentLang==='ja'?'月':'M'}</div><div class="text-sm font-black text-slate-800">${ev.n}</div></div><p class="text-[10px] text-slate-400 leading-relaxed font-medium">${ev.d}</p>`;
         c.appendChild(d);
     });
 }
