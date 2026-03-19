@@ -19,6 +19,7 @@ const i18n = {
         go_here: "ここへ行く", go_dis: "ここへ避難する", remove: "消す", add_modal_tour: "ここへ行く場所に追加", add_modal_dis: "ここを避難先に選ぶ",
         credit: "created by 大分県立日田高校 79回生 SS情報班", subtitle: "Concierge Map",
         history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", sightseeing: "観光地", camp: "キャンプ", sports: "スポーツ", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
+        h_map: "ハザードマップ", d_portal: "防災ポータル", oita_bousai: "おおいた防災ポータル", emergency_contact: "緊急連絡先",
         total_dist: "総距離", total_time: "合計時間", shelter_dist: "避難距離", shelter_time: "時間の目安", thinking: "AIがプランを練っています...", error: "エラーが発生しました: "
     },
     en: {
@@ -31,6 +32,7 @@ const i18n = {
         go_here: "Go Here", go_dis: "Evacuate Here", remove: "Remove", add_modal_tour: "Add to Plan", add_modal_dis: "Select as Shelter",
         credit: "created by Hita High School 79th SS Info Group", subtitle: "Concierge Map",
         history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", sightseeing: "Sightseeing", camp: "Camp", sports: "Sports", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
+        h_map: "Hazard Map", d_portal: "Disaster Portal", oita_bousai: "Oita Disaster Portal", emergency_contact: "Emergency Contacts",
         total_dist: "Distance", total_time: "Total Time", shelter_dist: "Distance", shelter_time: "Est. Time", thinking: "AI is thinking...", error: "Error occurred: "
     },
     zh: {
@@ -43,6 +45,7 @@ const i18n = {
         go_here: "去这里", go_dis: "去避难", remove: "删除", add_modal_tour: "加入行程", add_modal_dis: "选择为避难所",
         credit: "由 大分县立日田高中 第79届 SS信息组 创建", subtitle: "智能导览地图",
         history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进击的巨人", culture: "文化", shopping: "购物", sightseeing: "观光", camp: "露营", sports: "运动", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
+        h_map: "灾害地图", d_portal: "防灾门户", oita_bousai: "大分防灾门户", emergency_contact: "紧急联系方式",
         total_dist: "总距离", total_time: "总时间", shelter_dist: "避难距离", shelter_time: "预计时间", thinking: "AI 正在思考...", error: "发生错误: "
     },
     ko: {
@@ -55,6 +58,7 @@ const i18n = {
         go_here: "여기로 가기", go_dis: "여기로 대피", remove: "삭제", add_modal_tour: "플랜에 추가", add_modal_dis: "대피소로 선택",
         credit: "오이타현립 히타 고등학교 79회 SS정보반 제작", subtitle: "컨시어지 맵",
         history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", sightseeing: "관광지", camp: "캠핑", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
+        h_map: "해저드 맵", d_portal: "방재 포털", oita_bousai: "오이타 방재 포털", emergency_contact: "비상 연락처",
         total_dist: "총 거리", total_time: "총 시간", shelter_dist: "대피 거리", shelter_time: "예상 시간", thinking: "AI가 생각 중입니다...", error: "오류가 발생했습니다: "
     }
 };
@@ -415,6 +419,27 @@ function renderEvents() {
 }
 
 function renderDisasterInfo() {
+    const infoList = [
+        { name: t('h_map'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/bosai/11444.html", icon: "fa-map-marked-alt", color: "red" },
+        { name: t('d_portal'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/index.html", icon: "fa-shield-alt", color: "blue" },
+        { name: t('oita_bousai'), url: "https://www.bousai-oita.jp/", icon: "fa-broadcast-tower", color: "orange" },
+        { name: t('emergency_contact'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/bosai/3444.html", icon: "fa-phone-alt", color: "green" }
+    ];
     const c = document.getElementById('extra-content-list');
-    c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">${currentLang==='ja'?'防災情報':'Disaster Info'}</h3><div class="space-y-3 px-1"><a href="https://www.city.hita.oita.jp/soshiki/somubu/kikikanrishitu/kikikanri/anshin/bosai/Preparing_for_disaster/3317.html" target="_blank" class="block p-5 bg-red-50 rounded-[32px] border border-red-100 shadow-sm flex items-center gap-3"><i class="fas fa-map-marked-alt text-red-600 text-xl"></i><div><div class="text-sm font-bold text-slate-800">Hazard Map</div><div class="text-[9px] text-red-600 font-black uppercase mt-1">City HP</div></div></a></div>`;
+    c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">${currentLang==='ja'?'防災情報':'Disaster Info'}</h3><div class="space-y-3 px-1"></div>`;
+    const listDiv = c.querySelector('div');
+    infoList.forEach(info => {
+        const colors = {
+            red: "bg-red-50 border-red-100 text-red-600",
+            blue: "bg-blue-50 border-blue-100 text-blue-600",
+            orange: "bg-orange-50 border-orange-100 text-orange-600",
+            green: "bg-green-50 border-green-100 text-green-600"
+        };
+        const cls = colors[info.color];
+        const d = document.createElement('a');
+        d.href = info.url; d.target = "_blank";
+        d.className = `block p-5 ${cls.split(' ').slice(0,2).join(' ')} rounded-[32px] border shadow-sm flex items-center gap-4 transition-transform active:scale-95`;
+        d.innerHTML = `<i class="fas ${info.icon} ${cls.split(' ')[2]} text-xl w-8 text-center"></i><div><div class="text-sm font-bold text-slate-800">${info.name}</div><div class="text-[9px] ${cls.split(' ')[2]} font-black uppercase mt-1">External Link</div></div>`;
+        listDiv.appendChild(d);
+    });
 }
