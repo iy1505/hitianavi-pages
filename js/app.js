@@ -73,56 +73,48 @@ function setupEventListeners() {
     document.getElementById('reset-route-btn').onclick = resetAll;
 }
 
-// Bottom Sheet Draggable Logic
 function initBottomSheet() {
     const sidebar = document.getElementById('sidebar');
     const handle = document.getElementById('drawer-handle');
-    if (!handle || window.innerWidth > 768) return;
+    if (!handle || window.innerWidth >= 768) return;
 
     let startY, startTranslateY;
     const screenHeight = window.innerHeight;
-    const minTranslateY = 0; // Fully expanded
-    const midTranslateY = screenHeight * 0.45; // Half way
-    const maxTranslateY = screenHeight * 0.85 - 50; // Only handle visible
+    const midY = screenHeight * 0.45;
+    const lowY = screenHeight * 0.85 - 110;
 
-    const onTouchStart = (e) => {
+    handle.addEventListener('touchstart', (e) => {
         startY = e.touches[0].clientY;
         const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
         startTranslateY = matrix.m42;
         sidebar.classList.add('dragging');
-    };
+    });
 
-    const onTouchMove = (e) => {
+    handle.addEventListener('touchmove', (e) => {
         const deltaY = e.touches[0].clientY - startY;
         let newY = startTranslateY + deltaY;
-        if (newY < minTranslateY) newY = newY * 0.2; // Dampen top
+        if (newY < 0) newY *= 0.2; // 上限での抵抗
         sidebar.style.transform = `translateY(${newY}px)`;
-    };
+    });
 
-    const onTouchEnd = (e) => {
+    handle.addEventListener('touchend', (e) => {
         sidebar.classList.remove('dragging');
         const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
         const currentY = matrix.m42;
-        sidebar.style.transform = ''; // Clear inline style to let CSS transition take over
+        sidebar.style.transform = ''; // インラインスタイル解除
 
-        // Snapping logic
-        if (currentY < midTranslateY / 2) setBottomSheetPos('full');
-        else if (currentY < maxTranslateY - (maxTranslateY - midTranslateY) / 2) setBottomSheetPos('mid');
+        if (currentY < midY / 2) setBottomSheetPos('full');
+        else if (currentY < lowY - (lowY - midY) / 2) setBottomSheetPos('mid');
         else setBottomSheetPos('low');
-    };
-
-    handle.addEventListener('touchstart', onTouchStart);
-    handle.addEventListener('touchmove', onTouchMove);
-    handle.addEventListener('touchend', onTouchEnd);
+    });
 }
 
 function setBottomSheetPos(pos) {
     const sidebar = document.getElementById('sidebar');
-    if (window.innerWidth > 768) return;
-    const h = window.innerHeight;
-    if (pos === 'full') sidebar.style.transform = 'translateY(0)';
-    else if (pos === 'mid') sidebar.style.transform = 'translateY(45vh)';
-    else sidebar.style.transform = `translateY(calc(95vh - 120px))`;
+    if (window.innerWidth >= 768) return;
+    if (pos === 'full') sidebar.classList.add('open'), sidebar.style.transform = 'translateY(0)';
+    else if (pos === 'mid') sidebar.classList.add('open'), sidebar.style.transform = 'translateY(45vh)';
+    else sidebar.classList.remove('open'), sidebar.style.transform = '';
 }
 
 function resetAll() {
@@ -133,8 +125,7 @@ function resetAll() {
 }
 
 function switchTab(tabName) {
-    const tabs = ['list', 'info', 'extra'];
-    tabs.forEach(t => {
+    ['list', 'info', 'extra'].forEach(t => {
         const active = (t === tabName);
         const btn = document.getElementById(`tab-btn-${t}`);
         const pane = document.getElementById(`pane-${t}`);
@@ -149,13 +140,15 @@ function switchTab(tabName) {
 }
 
 function updateUI() {
-    const infoBtn = document.getElementById('tab-btn-info');
-    const extraBtn = document.getElementById('tab-btn-extra');
+    const infoTabBtn = document.getElementById('tab-btn-info');
+    const extraTabBtn = document.getElementById('tab-btn-extra');
     if (currentMode === 'tourism') {
-        infoBtn.innerText = '決定ルート・AI'; extraBtn.innerText = 'イベント';
+        infoTabBtn.textContent = window.innerWidth < 400 ? 'ルート' : '決定ルート・AI';
+        extraTabBtn.textContent = 'イベント';
         setupTourismAIUI(); renderEvents();
     } else {
-        infoBtn.innerText = '決定ルート・AI'; extraBtn.innerText = '防災情報';
+        infoTabBtn.textContent = 'AI防災相談';
+        extraTabBtn.textContent = '防災情報';
         setupDisasterAIUI(); renderDisasterInfo();
     }
     const chips = document.getElementById('category-chips');
@@ -164,7 +157,7 @@ function updateUI() {
         const b = document.createElement('button');
         const active = currentCategory === cat;
         const colorClass = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
-        b.className = `flex-none px-4 py-2 rounded-xl text-xs font-bold border transition-all ${active ? colorClass + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
+        b.className = `flex-none px-4 py-2 rounded-xl text-xs font-bold border transition-all ${active ? colorClass + ' text-white border-transparent shadow-md' : 'bg-white text-slate-500 border-slate-200'}`;
         b.innerText = cat === 'all' ? 'すべて' : cat;
         b.onclick = () => { currentCategory = cat; updateUI(); };
         chips.appendChild(b);
@@ -182,10 +175,10 @@ function setupTourismAIUI() {
     interests.innerHTML = '';
     ['歴史', '自然', 'グルメ'].forEach(v => {
         const b = document.createElement('button');
-        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500';
+        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all';
         b.innerText = v;
         b.onclick = () => {
-            b.classList.toggle('bg-brand-500'); b.classList.toggle('text-white');
+            b.classList.toggle('bg-brand-500'); b.classList.toggle('text-white'); b.classList.toggle('border-transparent');
             b.classList.toggle('bg-white'); b.classList.toggle('text-slate-500');
         };
         interests.appendChild(b);
@@ -202,10 +195,10 @@ function setupDisasterAIUI() {
     interests.innerHTML = '';
     ['食料', '衛生', '停電'].forEach(v => {
         const b = document.createElement('button');
-        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500';
+        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all';
         b.innerText = v;
         b.onclick = () => {
-            b.classList.toggle('bg-red-600'); b.classList.toggle('text-white');
+            b.classList.toggle('bg-red-600'); b.classList.toggle('text-white'); b.classList.toggle('border-transparent');
             b.classList.toggle('bg-white'); b.classList.toggle('text-slate-500');
         };
         interests.appendChild(b);
@@ -242,7 +235,7 @@ function updateList() {
 
         const intro = spot.説明.split(/[。！!？?]/)[0] + '。';
         const card = document.createElement('div');
-        card.className = `p-5 rounded-[32px] border transition-all ${spot.sel ? 'bg-brand-50 border-brand-300 shadow-md' : 'bg-white border-slate-100 shadow-sm'}`;
+        card.className = `p-5 rounded-[32px] border transition-all ${spot.sel ? 'bg-brand-50 border-brand-300 shadow-md ring-1 ring-brand-500/10' : 'bg-white border-slate-100 shadow-sm'}`;
         card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${intro}</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block">${spot.カテゴリ}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${spot.sel ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-slate-50 text-slate-600'}">${spot.sel ? '消す' : 'ここへ行く'}</button><button class="d-btn px-4 py-2.5 rounded-2xl bg-slate-50 text-slate-400"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
         card.onclick = () => { map.flyTo([spot.緯度, spot.経度], 15); };
         card.querySelector('.s-btn').onclick = (e) => { e.stopPropagation(); toggleSelect(spot); };
@@ -252,8 +245,8 @@ function updateList() {
 }
 
 function showDetail(spot) {
-    document.getElementById('detail-title').innerText = spot.スポット名;
-    document.getElementById('detail-desc').innerText = spot.説明;
+    document.getElementById('detail-title').textContent = spot.スポット名;
+    document.getElementById('detail-desc').textContent = spot.説明;
     const btn = document.getElementById('modal-select-btn');
     const isSel = selectedSpots.some(s => s.No === spot.No);
     btn.innerText = isSel ? 'えらんだ場所から消す' : 'ここへ行く場所に追加';
@@ -355,5 +348,5 @@ function renderEvents() {
 
 function renderDisasterInfo() {
     const c = document.getElementById('extra-content-list');
-    c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">防災情報</h3><div class="space-y-3"><a href="https://www.city.hita.oita.jp/soshiki/somubu/kikikanrishitu/kikikanri/anshin/bosai/Preparing_for_disaster/3317.html" target="_blank" class="block p-5 bg-red-50 rounded-[32px] border border-red-100 shadow-sm flex items-center gap-3"><i class="fas fa-map-marked-alt text-red-600 text-xl"></i><div><div class="text-sm font-bold text-slate-800">ハザードマップ</div><div class="text-[10px] text-red-600 font-bold">市HPを開く</div></div></a><div class="p-6 bg-slate-50 rounded-[32px] border border-slate-200 shadow-sm"><div class="text-xs font-bold text-slate-500 mb-4 text-center">緊急時の連絡先</div><div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 font-bold mb-1 text-center">消防・救急</div><div class="text-xl font-black text-red-600">119</div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 font-bold mb-1 text-center">警察</div><div class="text-xl font-black text-blue-600">110</div></div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center px-6"><span class="text-xs text-slate-500 font-bold text-center">日田市役所</span><span class="text-sm font-bold tracking-wider text-center">0973-23-3111</span></div></div></div>`;
+    c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">防災情報</h3><div class="space-y-3 px-1"><a href="https://www.city.hita.oita.jp/soshiki/somubu/kikikanrishitu/kikikanri/anshin/bosai/Preparing_for_disaster/3317.html" target="_blank" class="block p-5 bg-red-50 rounded-[32px] border border-red-100 shadow-sm flex items-center gap-3"><i class="fas fa-map-marked-alt text-red-600 text-xl"></i><div><div class="text-sm font-bold text-slate-800">ハザードマップ</div><div class="text-[10px] text-red-600 font-bold">市HPを開く</div></div></a><div class="p-6 bg-slate-50 rounded-[32px] border border-slate-200 shadow-sm"><div class="text-xs font-bold text-slate-500 mb-4 text-center">緊急時の連絡先</div><div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 font-bold mb-1 text-center">消防・救急</div><div class="text-xl font-black text-red-600">119</div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 font-bold mb-1 text-center">警察</div><div class="text-xl font-black text-blue-600">110</div></div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center px-6"><span class="text-xs text-slate-500 font-bold text-center">日田市役所</span><span class="text-sm font-bold tracking-wider text-center">0973-23-3111</span></div></div></div>`;
 }
