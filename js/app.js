@@ -93,7 +93,7 @@ function initBottomSheet() {
     handle.addEventListener('touchmove', (e) => {
         const deltaY = e.touches[0].clientY - startY;
         let newY = startTranslateY + deltaY;
-        if (newY < 0) newY *= 0.2; // 上限での抵抗
+        if (newY < 0) newY *= 0.2;
         sidebar.style.transform = `translateY(${newY}px)`;
     });
 
@@ -101,7 +101,7 @@ function initBottomSheet() {
         sidebar.classList.remove('dragging');
         const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
         const currentY = matrix.m42;
-        sidebar.style.transform = ''; // インラインスタイル解除
+        sidebar.style.transform = '';
 
         if (currentY < midY / 2) setBottomSheetPos('full');
         else if (currentY < lowY - (lowY - midY) / 2) setBottomSheetPos('mid');
@@ -137,17 +137,24 @@ function switchTab(tabName) {
         }
         if (pane) pane.classList.toggle('hidden', !active);
     });
+    // 検索セクションは「Find」タブのみ表示
+    document.getElementById('search-section').classList.toggle('hidden', tabName !== 'list');
+    
+    // タブ切り替え時にトップへスクロール
+    document.getElementById('sidebar-scroll-area').scrollTop = 0;
 }
 
 function updateUI() {
     const infoTabBtn = document.getElementById('tab-btn-info');
     const extraTabBtn = document.getElementById('tab-btn-extra');
+    const isMobile = window.innerWidth < 768;
+
     if (currentMode === 'tourism') {
-        infoTabBtn.textContent = window.innerWidth < 400 ? 'ルート' : '決定ルート・AI';
+        infoTabBtn.textContent = isMobile ? 'ルート' : '決定ルート・AI';
         extraTabBtn.textContent = 'イベント';
         setupTourismAIUI(); renderEvents();
     } else {
-        infoTabBtn.textContent = 'AI防災相談';
+        infoTabBtn.textContent = isMobile ? '相談' : 'AI防災相談';
         extraTabBtn.textContent = '防災情報';
         setupDisasterAIUI(); renderDisasterInfo();
     }
@@ -157,8 +164,8 @@ function updateUI() {
         const b = document.createElement('button');
         const active = currentCategory === cat;
         const colorClass = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
-        b.className = `flex-none px-4 py-2 rounded-xl text-xs font-bold border transition-all ${active ? colorClass + ' text-white border-transparent shadow-md' : 'bg-white text-slate-500 border-slate-200'}`;
-        b.innerText = cat === 'all' ? 'すべて' : cat;
+        b.className = `flex-none px-4 py-2 rounded-xl text-[10px] font-black border transition-all ${active ? colorClass + ' text-white border-transparent' : 'bg-white text-slate-400 border-slate-200'}`;
+        b.innerText = (cat === 'all' ? 'すべて' : cat).toUpperCase();
         b.onclick = () => { currentCategory = cat; updateUI(); };
         chips.appendChild(b);
     });
@@ -170,15 +177,14 @@ function setupTourismAIUI() {
     document.getElementById('ai-input-1').placeholder = '滞在時間';
     document.getElementById('ai-input-2').placeholder = '予算';
     document.getElementById('ai-btn').innerText = 'AIプランを作成';
-    document.getElementById('ai-btn').className = 'w-full bg-brand-accent text-white py-4 rounded-[20px] text-sm font-black shadow-lg';
     const interests = document.getElementById('ai-interests');
     interests.innerHTML = '';
     ['歴史', '自然', 'グルメ'].forEach(v => {
         const b = document.createElement('button');
-        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all';
+        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500';
         b.innerText = v;
         b.onclick = () => {
-            b.classList.toggle('bg-brand-500'); b.classList.toggle('text-white'); b.classList.toggle('border-transparent');
+            b.classList.toggle('bg-brand-500'); b.classList.toggle('text-white');
             b.classList.toggle('bg-white'); b.classList.toggle('text-slate-500');
         };
         interests.appendChild(b);
@@ -190,15 +196,14 @@ function setupDisasterAIUI() {
     document.getElementById('ai-input-1').placeholder = '家族構成';
     document.getElementById('ai-input-2').placeholder = '予算';
     document.getElementById('ai-btn').innerText = '必要なものを聞く';
-    document.getElementById('ai-btn').className = 'w-full bg-red-600 text-white py-4 rounded-[20px] text-sm font-black shadow-lg';
     const interests = document.getElementById('ai-interests');
     interests.innerHTML = '';
     ['食料', '衛生', '停電'].forEach(v => {
         const b = document.createElement('button');
-        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500 transition-all';
+        b.className = 'interest-chip px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-bold bg-white text-slate-500';
         b.innerText = v;
         b.onclick = () => {
-            b.classList.toggle('bg-red-600'); b.classList.toggle('text-white'); b.classList.toggle('border-transparent');
+            b.classList.toggle('bg-red-600'); b.classList.toggle('text-white');
             b.classList.toggle('bg-white'); b.classList.toggle('text-slate-500');
         };
         interests.appendChild(b);
@@ -211,10 +216,12 @@ function updateList() {
     list.innerHTML = '';
     markers.forEach(m => map.removeLayer(m));
     markers = [];
+
     const items = allData[currentMode].map(s => ({
         ...s, dist: calculateDistance(userLocation[0], userLocation[1], s.緯度, s.経度),
         sel: selectedSpots.some(x => x.No === s.No)
     }));
+
     const filtered = items.filter(s => {
         const mSearch = s.スポット名.toLowerCase().includes(search) || s.説明.toLowerCase().includes(search);
         const mCat = currentCategory === 'all' || s.カテゴリ === currentCategory;
@@ -235,8 +242,8 @@ function updateList() {
 
         const intro = spot.説明.split(/[。！!？?]/)[0] + '。';
         const card = document.createElement('div');
-        card.className = `p-5 rounded-[32px] border transition-all ${spot.sel ? 'bg-brand-50 border-brand-300 shadow-md ring-1 ring-brand-500/10' : 'bg-white border-slate-100 shadow-sm'}`;
-        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${intro}</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block">${spot.カテゴリ}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${spot.sel ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-slate-50 text-slate-600'}">${spot.sel ? '消す' : 'ここへ行く'}</button><button class="d-btn px-4 py-2.5 rounded-2xl bg-slate-50 text-slate-400"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
+        card.className = `p-5 rounded-[32px] border transition-all ${spot.sel ? 'bg-brand-50 border-brand-300 shadow-md' : 'bg-white border-slate-100 shadow-sm'}`;
+        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${intro}</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${spot.カテゴリ}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${spot.sel ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-slate-50 text-slate-600'}">${spot.sel ? '消す' : 'ここへ行く'}</button><button class="d-btn px-4 py-2.5 rounded-2xl bg-slate-50 text-slate-400"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
         card.onclick = () => { map.flyTo([spot.緯度, spot.経度], 15); };
         card.querySelector('.s-btn').onclick = (e) => { e.stopPropagation(); toggleSelect(spot); };
         card.querySelector('.d-btn').onclick = (e) => { e.stopPropagation(); showDetail(spot); };
@@ -245,8 +252,8 @@ function updateList() {
 }
 
 function showDetail(spot) {
-    document.getElementById('detail-title').textContent = spot.スポット名;
-    document.getElementById('detail-desc').textContent = spot.説明;
+    document.getElementById('detail-title').innerText = spot.スポット名;
+    document.getElementById('detail-desc').innerText = spot.説明;
     const btn = document.getElementById('modal-select-btn');
     const isSel = selectedSpots.some(s => s.No === spot.No);
     btn.innerText = isSel ? 'えらんだ場所から消す' : 'ここへ行く場所に追加';
@@ -261,7 +268,7 @@ function toggleSelect(spot) {
     const i = selectedSpots.findIndex(s => s.No === spot.No);
     if (i >= 0) selectedSpots.splice(i, 1); else selectedSpots.push(spot);
     updateList();
-    document.getElementById('selected-count').innerText = `${selectedSpots.length} か所えらんだよ`;
+    document.getElementById('selected-count').innerText = `${selectedSpots.length}SELECTED`;
 }
 
 function calculateDistance(l1, o1, l2, o2) {
@@ -301,8 +308,9 @@ function optimizeRoute() {
         pos = [n.緯度, n.経度];
     }
     const h = Math.floor(totalTime / 60), m = Math.round(totalTime % 60);
+    const timeStr = h > 0 ? `${h}時間${m}分` : `${m}分`;
     const stats = document.getElementById('route-stats');
-    stats.innerHTML = `<div class="flex justify-between items-center bg-white/50 p-3 rounded-2xl mb-2"><div class="text-center flex-1 border-r border-brand-100"><div class="text-[10px] text-slate-400 font-bold uppercase">Distance</div><div class="text-sm font-black text-brand-500">${dist.toFixed(2)}km</div></div><div class="text-center flex-1"><div class="text-[10px] text-slate-400 font-bold uppercase">Total Time</div><div class="text-sm font-black text-brand-500">${h > 0 ? h + '時間' : ''}${m}分</div></div></div><div class="space-y-1.5 mt-3">${route.map((s,i)=>`<div class="flex items-center gap-2 text-xs font-bold"><span class="w-5 h-5 bg-brand-500 text-white rounded-full flex items-center justify-center text-[10px] shadow-sm">${i+1}</span> ${s.スポット名}</div>`).join('')}</div>`;
+    stats.innerHTML = `<div class="flex justify-between items-center bg-white/50 p-3 rounded-2xl mb-2"><div class="text-center flex-1 border-r border-brand-100"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Dist.</div><div class="text-xs font-black text-brand-500">${dist.toFixed(2)}km</div></div><div class="text-center flex-1"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Time</div><div class="text-xs font-black text-brand-500">${timeStr}</div></div></div><div class="space-y-1.5 mt-3">${route.map((s,i)=>`<div class="text-[11px] font-bold flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-brand-500 text-white flex items-center justify-center text-[8px]">${i+1}</span>${s.スポット名}</div>`).join('')}</div>`;
     document.getElementById('route-info').classList.remove('hidden');
     const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation[0]},${userLocation[1]}&destination=${route[route.length-1].緯度},${route[route.length-1].経度}&waypoints=${route.slice(0,-1).map(s=>`${s.緯度},${s.経度}`).join('|')}&travelmode=${currentMode==='tourism'?'driving':'walking'}`;
     document.getElementById('gmaps-link-btn').onclick = () => window.open(url, '_blank');
@@ -322,7 +330,7 @@ async function callGemini() {
     const interests = Array.from(document.querySelectorAll(`.interest-chip.${activeClass}`)).map(chip => chip.getAttribute('data-value'));
     const res = document.getElementById('ai-response');
     res.innerText = "AIがプランを練っています..."; res.classList.remove('hidden');
-    let prompt = currentMode === 'tourism' ? `日田市観光プラン提案: 時間 ${v1}, 予算 ${v2}, 要望 ${req}` : `防災グッズ提案: 家族 ${v1}, 予算 ${v2}, 要望 ${req}`;
+    let prompt = currentMode === 'tourism' ? `日田市観光プラン提案: 時間 ${v1}, 予算 ${v2}, 興味 ${interests.join(',')}, 要望 ${req}` : `防災グッズ提案: 家族 ${v1}, 予算 ${v2}, 重視 ${interests.join(',')}, 要望 ${req}`;
     try {
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -340,13 +348,13 @@ function renderEvents() {
     events.forEach(ev => {
         const rel = allData.tourism.find(s => s.説明.includes(ev.keyword)) || { 説明: "日田の伝統行事です。" };
         const d = document.createElement('div');
-        d.className = 'p-5 bg-white rounded-[32px] border border-slate-100 shadow-sm space-y-3';
-        d.innerHTML = `<div class="flex items-center gap-4"><div class="bg-brand-50 text-brand-500 font-black w-12 h-12 rounded-2xl flex-none flex items-center justify-center shadow-inner">${ev.m}月</div><div class="text-base font-bold text-slate-800">${ev.n}</div></div><p class="text-[11px] text-slate-500 leading-relaxed font-medium">${rel.説明.split(/[。！!？?]/)[0]}。</p>`;
+        d.className = 'p-5 bg-white rounded-[32px] border border-slate-100 shadow-sm space-y-2';
+        d.innerHTML = `<div class="flex items-center gap-4"><div class="bg-brand-50 text-brand-500 font-black w-10 h-10 rounded-xl flex-none flex items-center justify-center text-xs shadow-inner">${ev.m}月</div><div class="text-sm font-black text-slate-800 tracking-tight">${ev.n}</div></div><p class="text-[10px] text-slate-400 leading-relaxed font-medium">${rel.説明.split(/[。！!？?]/)[0]}。</p>`;
         c.appendChild(d);
     });
 }
 
 function renderDisasterInfo() {
     const c = document.getElementById('extra-content-list');
-    c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">防災情報</h3><div class="space-y-3 px-1"><a href="https://www.city.hita.oita.jp/soshiki/somubu/kikikanrishitu/kikikanri/anshin/bosai/Preparing_for_disaster/3317.html" target="_blank" class="block p-5 bg-red-50 rounded-[32px] border border-red-100 shadow-sm flex items-center gap-3"><i class="fas fa-map-marked-alt text-red-600 text-xl"></i><div><div class="text-sm font-bold text-slate-800">ハザードマップ</div><div class="text-[10px] text-red-600 font-bold">市HPを開く</div></div></a><div class="p-6 bg-slate-50 rounded-[32px] border border-slate-200 shadow-sm"><div class="text-xs font-bold text-slate-500 mb-4 text-center">緊急時の連絡先</div><div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 font-bold mb-1 text-center">消防・救急</div><div class="text-xl font-black text-red-600">119</div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center"><div class="text-[10px] text-slate-400 font-bold mb-1 text-center">警察</div><div class="text-xl font-black text-blue-600">110</div></div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center px-6"><span class="text-xs text-slate-500 font-bold text-center">日田市役所</span><span class="text-sm font-bold tracking-wider text-center">0973-23-3111</span></div></div></div>`;
+    c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">防災情報</h3><div class="space-y-3 px-1"><a href="https://www.city.hita.oita.jp/soshiki/somubu/kikikanrishitu/kikikanri/anshin/bosai/Preparing_for_disaster/3317.html" target="_blank" class="block p-5 bg-red-50 rounded-[32px] border border-red-100 shadow-sm flex items-center gap-3"><i class="fas fa-map-marked-alt text-red-600 text-xl"></i><div><div class="text-sm font-bold text-slate-800 leading-tight">ハザードマップ</div><div class="text-[9px] text-red-600 font-black uppercase mt-1">Hita City HP</div></div></a><div class="p-6 bg-slate-50 rounded-[32px] border border-slate-200 shadow-sm space-y-4"><div class="text-[10px] font-black text-slate-400 text-center uppercase tracking-widest">Emergency Contacts</div><div class="grid grid-cols-2 gap-3"><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm"><div class="text-[9px] text-slate-400 font-bold mb-1">消防</div><div class="text-lg font-black text-red-600 leading-none">119</div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm"><div class="text-[9px] text-slate-400 font-bold mb-1">警察</div><div class="text-lg font-black text-blue-600 leading-none">110</div></div></div><div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center px-6 shadow-sm"><span class="text-[10px] text-slate-500 font-bold">日田市役所</span><span class="text-xs font-black tracking-wider">0973-23-3111</span></div></div></div>`;
 }
