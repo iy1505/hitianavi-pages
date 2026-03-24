@@ -4,6 +4,9 @@ let allData = { tourism: [], disaster: [] };
 let currentMode = 'tourism';
 let currentCategory = 'all';
 let currentLang = 'ja';
+let currentSort = 'dist';
+let filter1km = false;
+let filterOpen = false;
 let userLocation = [33.3219, 130.9414];
 let selectedSpots = [];
 let userMarker;
@@ -13,6 +16,8 @@ const i18n = {
         find: "場所をさがす", shelter: "避難所をさがす", route_ai: "決定ルート・AI", route: "ルート", consult: "相談", info: "情報", event: "イベント",
         search_tour: "観光地やキーワードで検索...", search_dis: "避難所名や場所で検索...", decide_tour: "ルート算出",
         sel_tour: "か所選択", sel_dis: "か所選択", add_tour: "場所を追加", add_dis: "避難先を追加", reset: "やり直し", reset_all: "選択をリセット",
+        sort_dist: "現在地から近い順", sort_cat: "カテゴリ順", sort_name: "名前順",
+        filter_1km: "1km以内", filter_open: "営業中",
         gmaps_tour: "Googleマップで出発", gmaps_dis: "Googleマップで避難開始", ai_tour_title: "AI観光ガイド", ai_dis_title: "AI防災グッズ相談",
         ai_in1_tour: "滞在時間", ai_in1_dis: "家族構成 (例: 大人2人)", ai_in2_tour: "予算", ai_in2_dis: "予算 (備蓄用)",
         ai_btn_tour: "AIにおまかせプラン作成", ai_btn_dis: "必要な備えを聞く", ai_req: "その他の要望", ai_req_tour: "例: 子供連れ、映える場所など",
@@ -36,7 +41,9 @@ const i18n = {
     en: {
         find: "Find Spots", shelter: "Find Shelters", route_ai: "Route / AI", route: "Route", consult: "Consult", info: "Info", event: "Events",
         search_tour: "Search spots...", search_dis: "Search shelters...", decide_tour: "Optimize Route",
-        sel_tour: "spots selected", sel_dis: "shelters selected", add_tour: "Add Spot", add_dis: "Add Shelter", reset: "Retry", reset_all: "Reset All",
+        sel_tour: "spots selected", sel_dis: "spots selected", add_tour: "Add Spot", add_dis: "Add Shelter", reset: "Retry", reset_all: "Reset All",
+        sort_dist: "Nearby", sort_cat: "Category", sort_name: "Name",
+        filter_1km: "Within 1km", filter_open: "Open Now",
         gmaps_tour: "Start Navigation", gmaps_dis: "Start Evacuation", ai_tour_title: "AI Tour Guide", ai_dis_title: "AI Disaster Consult",
         ai_in1_tour: "Duration", ai_in1_dis: "Family (e.g. 2 adults)", ai_in2_tour: "Budget", ai_in2_dis: "Stock Budget",
         ai_btn_tour: "Create AI Plan", ai_btn_dis: "Ask for Supplies", ai_req: "Other requests", ai_req_tour: "e.g. Kid-friendly, Photo-genic",
@@ -60,7 +67,9 @@ const i18n = {
     zh: {
         find: "寻找地点", shelter: "寻找避难所", route_ai: "路线 / AI", route: "路线", consult: "咨询", info: "信息", event: "活动",
         search_tour: "搜索景点...", search_dis: "搜索避难所...", decide_tour: "优化路线",
-        sel_tour: "个已选择", sel_dis: "个避难所已选择", add_tour: "添加地点", add_dis: "添加避难所", reset: "重试", reset_all: "全部清除",
+        sel_tour: "个已选择", sel_dis: "个已选择", add_tour: "添加地点", add_dis: "添加避难所", reset: "重试", reset_all: "全部清除",
+        sort_dist: "离我最近", sort_cat: "按类别", sort_name: "按名称",
+        filter_1km: "1公里以内", filter_open: "营业中",
         gmaps_tour: "开始导航", gmaps_dis: "开始避难", ai_tour_title: "AI 旅游指南", ai_dis_title: "AI 防灾咨询",
         ai_in1_tour: "停留时间", ai_in1_dis: "家庭构成 (如: 2名成人)", ai_in2_tour: "预算", ai_in2_dis: "备货预算",
         ai_btn_tour: "生成 AI 方案", ai_btn_dis: "咨询防灾用品", ai_req: "其他要求", ai_req_tour: "例如: 亲子游, 适合拍照",
@@ -79,8 +88,10 @@ const i18n = {
     ko: {
         find: "장소 찾기", shelter: "대피소 찾기", route_ai: "결정 루트 / AI", route: "루트", consult: "상담", info: "정보", event: "이벤트",
         search_tour: "관광지 검색...", search_dis: "대피소 검색...", decide_tour: "최적화 경로 산출",
-        sel_tour: "곳 선택됨", sel_dis: "곳 대피소 선택됨", add_tour: "장소 추가", add_dis: "대피소 추가", reset: "다시 시도", reset_all: "모두 해제",
-        gmaps_tour: "네비게이션 시작", gmaps_dis: "대피 시작", ai_tour_title: "AI 관광 가이드", ai_dis_title: "AI 방재 상담",
+        sel_tour: "곳 선택됨", sel_dis: "곳 선택됨", add_tour: "장소 추가", add_dis: "대피소 추가", reset: "다시 시度", reset_all: "모두 해제",
+        sort_dist: "가까운 순", sort_cat: "카테고리 순", sort_name: "이름 순",
+        filter_1km: "1km 이내", filter_open: "영업 중",
+        gmaps_tour: "네비게이션 시작", gmaps_dis: "대피 시작", ai_tour_title: "AI 관광 가イド", ai_dis_title: "AI 방재 상담",
         ai_in1_tour: "체류 시간", ai_in1_dis: "가족 구성 (예: 성인 2명)", ai_in2_tour: "예산", ai_in2_dis: "비축 예산",
         ai_btn_tour: "AI 플랜 생성", ai_btn_dis: "필요한 물품 묻기", ai_req: "기타 요청", ai_req_tour: "예: 아이 동반, 포토존",
         go_here: "여기로 가기", go_dis: "여기로 대피", remove: "삭제", add_modal_tour: "플랜에 추가", add_modal_dis: "대피소로 선택",
@@ -175,6 +186,15 @@ function setupEventListeners() {
         }
     };
     document.getElementById('optimize-btn').onclick = optimizeRoute;
+    document.getElementById('sort-select').onchange = (e) => {
+        currentSort = e.target.value; updateList();
+    };
+    document.getElementById('filter-1km').onclick = () => {
+        filter1km = !filter1km; updateUI();
+    };
+    document.getElementById('filter-open').onclick = () => {
+        filterOpen = !filterOpen; updateUI();
+    };
     document.getElementById('clear-btn').onclick = () => resetAll();
     document.getElementById('ai-btn').onclick = callGemini;
     document.getElementById('close-modal').onclick = closeModal;
@@ -266,8 +286,20 @@ function updateUI() {
     // Search & Optimize
     document.getElementById('search-input').placeholder = currentMode === 'tourism' ? t('search_tour') : t('search_dis');
     document.getElementById('optimize-btn').innerText = t('decide_tour');
+    document.getElementById('sort-opt-dist').innerText = t('sort_dist');
+    document.getElementById('sort-opt-cat').innerText = t('sort_cat');
+    document.getElementById('sort-opt-name').innerText = t('sort_name');
     document.getElementById('selected-count').innerText = `${selectedSpots.length} ${currentMode === 'tourism' ? t('sel_tour') : t('sel_dis')}`;
     document.getElementById('clear-btn').innerText = t('selection_reset').toUpperCase();
+
+    // Filters UI
+    const f1km = document.getElementById('filter-1km');
+    f1km.innerText = t('filter_1km');
+    f1km.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filter1km ? 'bg-brand-500 text-white border-transparent' : 'bg-white text-slate-50 text-slate-500 border-slate-200'}`;
+    
+    const fOpen = document.getElementById('filter-open');
+    fOpen.innerText = t('filter_open');
+    fOpen.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filterOpen ? 'bg-brand-500 text-white border-transparent' : 'bg-white text-slate-50 text-slate-500 border-slate-200'}`;
 
     if (currentMode === 'tourism') { setupTourismAIUI(); renderEvents(); }
     else { setupDisasterAIUI(); renderDisasterInfo(); }
@@ -365,10 +397,18 @@ function updateList() {
         sel: selectedSpots.some(x => x.No === s.No)
     }));
     const filtered = items.filter(s => {
-        const mSearch = s.スポット名.toLowerCase().includes(search) || s.説明.toLowerCase().includes(search);
+        const mSearch = s.スポット名.toLowerCase().includes(search) || s.説明.toLowerCase().includes(search) || s.カテゴリ.toLowerCase().includes(search);
         const mCat = currentCategory === 'all' || s.カテゴリ === currentCategory;
-        return (mSearch && mCat) || s.sel;
-    }).sort((a, b) => (a.sel === b.sel) ? a.dist - b.dist : (a.sel ? -1 : 1));
+        const mDist = !filter1km || s.dist <= 1.0;
+        const mOpen = !filterOpen || isOpen(s.営業時間);
+        return (mSearch && mCat && mDist && mOpen) || s.sel;
+    }).sort((a, b) => {
+        if (a.sel !== b.sel) return a.sel ? -1 : 1;
+        if (currentSort === 'dist') return a.dist - b.dist;
+        if (currentSort === 'cat') return a.カテゴリ.localeCompare(b.カテゴリ, 'ja');
+        if (currentSort === 'name') return a.スポット名.localeCompare(b.スポット名, 'ja');
+        return 0;
+    });
 
     filtered.forEach(spot => {
         const st = getSpotStyle(spot);
@@ -567,4 +607,18 @@ function renderDisasterInfo() {
         d.innerHTML = `<i class="fas ${info.icon} ${cls.split(' ')[2]} text-xl w-8 text-center"></i><div class="flex-1"><div class="text-sm font-bold text-slate-800">${info.name}</div><div class="text-[10px] text-slate-500 mt-1 leading-relaxed">${info.desc}</div><div class="text-[8px] ${cls.split(' ')[2]} font-black uppercase mt-1">External Link</div></div>`;
         listDiv.appendChild(d);
     });
+}
+
+function isOpen(hours) {
+    if (!hours || hours === '終日') return true;
+    try {
+        const now = new Date();
+        const curTime = now.getHours() * 60 + now.getMinutes();
+        const matches = hours.match(/(\d{1,2}):(\d{2})[-〜](\d{1,2}):(\d{2})/);
+        if (!matches) return true;
+        const start = parseInt(matches[1]) * 60 + parseInt(matches[2]);
+        const end = parseInt(matches[3]) * 60 + parseInt(matches[4]);
+        if (start <= end) return curTime >= start && curTime <= end;
+        else return curTime >= start || curTime <= end; // Over midnight
+    } catch (e) { return true; }
 }
