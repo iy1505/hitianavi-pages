@@ -545,10 +545,10 @@ function showEventDetail(ev) {
 
 function renderDisasterInfo() {
     const infoList = [
-        { name: t('h_map'), desc: t('h_map_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/7451.html", icon: "fa-map-marked-alt", color: "red" },
+        { name: t('h_map'), desc: t('h_map_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/saigai/11444.html", icon: "fa-map-marked-alt", color: "red" },
         { name: t('d_portal'), desc: t('d_portal_desc'), url: "https://www.city.hita.oita.jp/bousai/index.html", icon: "fa-shield-alt", color: "blue" },
-        { name: t('oita_bousai'), desc: t('oita_bousai_desc'), url: "https://www.bousai-oita.jp/", icon: "fa-broadcast-tower", color: "orange" },
-        { name: t('emergency_contact'), desc: t('emergency_contact_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/kinkyu/", icon: "fa-phone-alt", color: "green" }
+        { name: t('oita_bousai'), desc: t('oita_bousai_desc'), url: "https://oita-bosai.jp/", icon: "fa-broadcast-tower", color: "orange" },
+        { name: t('emergency_contact'), desc: t('emergency_contact_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/index.html", icon: "fa-phone-alt", color: "green" }
     ];
     const c = document.getElementById('extra-content-list');
     c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">${currentLang==='ja'?'防災情報':'Disaster Info'}</h3><div class="space-y-3 px-1"></div>`;
