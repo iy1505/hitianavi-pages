@@ -113,7 +113,37 @@ function initMap() {
 }
 
 async function loadData() {
-    try { const response = await fetch('spots.json'); allData = await response.json(); } catch (e) { console.error(e); }
+    try {
+        const response = await fetch('spots.xlsx');
+        const arrayBuffer = await response.arrayBuffer();
+        const data = new Uint8Array(arrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // 観光シートの読み込み
+        const tourismSheet = workbook.Sheets['観光'];
+        if (tourismSheet) {
+            allData.tourism = XLSX.utils.sheet_to_json(tourismSheet).map(row => ({
+                ...row,
+                // 数値型の変換とデフォルト値の設定
+                待ち時間: row.待ち時間 || 0,
+                所要時間: parseInt(row['所要時間（参考）']) || 0
+            }));
+        }
+
+        // 防災シートの読み込み
+        const disasterSheet = workbook.Sheets['防災'];
+        if (disasterSheet) {
+            allData.disaster = XLSX.utils.sheet_to_json(disasterSheet).map(row => ({
+                ...row,
+                所要時間: parseInt(row['所要時間（参考）']) || 5
+            }));
+        }
+        
+        console.log("Loaded data from Excel:", allData);
+    } catch (e) {
+        console.error("Error loading Excel:", e);
+        alert("データの読み込みに失敗しました。spots.xlsxを確認してください。");
+    }
 }
 
 function setupEventListeners() {
