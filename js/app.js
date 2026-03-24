@@ -20,11 +20,16 @@ const i18n = {
         credit: "created by 大分県立日田高校 79回生 SS情報班", subtitle: "日田市総合案内コンシェルジュ",
         history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", sightseeing: "観光地", camp: "キャンプ", sports: "スポーツ", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
         h_map: "ハザードマップ", d_portal: "防災ポータル", oita_bousai: "おおいた防災ポータル", emergency_contact: "緊急連絡先",
+        h_map_desc: "浸水想定区域や土砂災害警戒区域を確認できます。",
+        d_portal_desc: "日田市の最新の防災情報をまとめて確認できます。",
+        oita_bousai_desc: "大分県全域の雨量や河川水位、避難情報をリアルタイムで提供。",
+        emergency_contact_desc: "市役所や消防、警察などの緊急時の連絡先一覧です。",
         event_1: "天領日田おひなまつり", event_desc_1: "豆田町一帯で雛人形を展示する春の風物詩。江戸〜昭和の雛人形が並びます。",
         event_2: "日田川開き観光祭", event_desc_2: "九州最大級の花火大会を含む日田最大の祭り。三隈川で鵜飼いも始まります。",
         event_3: "日田祇園祭", event_desc_3: "300年以上の歴史を持つユネスコ無形文化遺産の祭り。豪華な山鉾が練り歩きます。",
         event_4: "千年あかり", event_desc_4: "豆田町と花月川周辺を約3万本の竹灯籠が彩る幻想的な秋の夜のイベント。",
         total_dist: "総距離", total_time: "合計時間", shelter_dist: "避難距離", shelter_time: "時間の目安", thinking: "AIがプランを練っています...", error: "エラーが発生しました: ",
+        gps_error: "現在地を取得できませんでした。設定を確認してください。",
         selection_reset: "選択をすべてリセット",
         header_title: "日田なび"
     },
@@ -39,11 +44,16 @@ const i18n = {
         credit: "created by Hita High School 79th SS Info Group", subtitle: "Hita City Concierge Map",
         history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", sightseeing: "Sightseeing", camp: "Camp", sports: "Sports", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
         h_map: "Hazard Map", d_portal: "Disaster Portal", oita_bousai: "Oita Disaster Portal", emergency_contact: "Emergency Contacts",
+        h_map_desc: "Check flood and landslide risk areas.",
+        d_portal_desc: "Unified source for Hita City's latest disaster info.",
+        oita_bousai_desc: "Real-time rain, river levels, and evacuation info across Oita.",
+        emergency_contact_desc: "Contact list for city hall, fire, and police.",
         event_1: "Hita Ohina-matsuri", event_desc_1: "A spring tradition in Mameda town displaying doll collections from Edo to Showa eras.",
         event_2: "Hita Kawabiraki Festival", event_desc_2: "Hita's largest festival featuring major fireworks and cormorant fishing on Mikuma river.",
         event_3: "Hita Gion Festival", event_desc_3: "UNESCO Intangible Cultural Heritage with 300 years of history and ornate floats.",
         event_4: "Sennen-Akari", event_desc_4: "A mystical autumn night event with 30,000 bamboo lanterns lighting up Mameda town.",
         total_dist: "Distance", total_time: "Total Time", shelter_dist: "Distance", shelter_time: "Est. Time", thinking: "AI is thinking...", error: "Error occurred: ",
+        gps_error: "Could not get current location. Please check settings.",
         selection_reset: "Selection Reset",
         header_title: "Hita Navi"
     },
@@ -124,6 +134,13 @@ function setupEventListeners() {
             navigator.geolocation.getCurrentPosition(p => {
                 userLocation = [p.coords.latitude, p.coords.longitude];
                 map.flyTo(userLocation, 15); userMarker.setLatLng(userLocation); updateList();
+            }, (err) => {
+                console.error(err);
+                alert(t('gps_error'));
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             });
         }
     };
@@ -498,10 +515,10 @@ function showEventDetail(ev) {
 
 function renderDisasterInfo() {
     const infoList = [
-        { name: t('h_map'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/bosai/11444.html", icon: "fa-map-marked-alt", color: "red" },
-        { name: t('d_portal'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/index.html", icon: "fa-shield-alt", color: "blue" },
-        { name: t('oita_bousai'), url: "https://www.bousai-oita.jp/", icon: "fa-broadcast-tower", color: "orange" },
-        { name: t('emergency_contact'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/bosai/3444.html", icon: "fa-phone-alt", color: "green" }
+        { name: t('h_map'), desc: t('h_map_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/7451.html", icon: "fa-map-marked-alt", color: "red" },
+        { name: t('d_portal'), desc: t('d_portal_desc'), url: "https://www.city.hita.oita.jp/bousai/index.html", icon: "fa-shield-alt", color: "blue" },
+        { name: t('oita_bousai'), desc: t('oita_bousai_desc'), url: "https://www.bousai-oita.jp/", icon: "fa-broadcast-tower", color: "orange" },
+        { name: t('emergency_contact'), desc: t('emergency_contact_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/kinkyu/", icon: "fa-phone-alt", color: "green" }
     ];
     const c = document.getElementById('extra-content-list');
     c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">${currentLang==='ja'?'防災情報':'Disaster Info'}</h3><div class="space-y-3 px-1"></div>`;
@@ -517,7 +534,7 @@ function renderDisasterInfo() {
         const d = document.createElement('a');
         d.href = info.url; d.target = "_blank";
         d.className = `block p-5 ${cls.split(' ').slice(0,2).join(' ')} rounded-[32px] border shadow-sm flex items-center gap-4 transition-transform active:scale-95`;
-        d.innerHTML = `<i class="fas ${info.icon} ${cls.split(' ')[2]} text-xl w-8 text-center"></i><div><div class="text-sm font-bold text-slate-800">${info.name}</div><div class="text-[9px] ${cls.split(' ')[2]} font-black uppercase mt-1">External Link</div></div>`;
+        d.innerHTML = `<i class="fas ${info.icon} ${cls.split(' ')[2]} text-xl w-8 text-center"></i><div class="flex-1"><div class="text-sm font-bold text-slate-800">${info.name}</div><div class="text-[10px] text-slate-500 mt-1 leading-relaxed">${info.desc}</div><div class="text-[8px] ${cls.split(' ')[2]} font-black uppercase mt-1">External Link</div></div>`;
         listDiv.appendChild(d);
     });
 }
