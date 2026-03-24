@@ -290,13 +290,19 @@ function setupDisasterAIUI() {
 
 function getSpotStyle(spot) {
     if (spot.sel) return { color: '#ef4444', icon: 'fa-star' };
+    
+    // Check for special names
+    if (spot.スポット名.includes('進撃の巨人')) {
+        return { color: '#dc2626', icon: 'fa-fist-raised' };
+    }
+
     const styles = {
         '歴史': { color: '#1b4353', icon: 'fa-landmark' }, '自然': { color: '#10b981', icon: 'fa-tree' },
         'グルメ': { color: '#f59e0b', icon: 'fa-utensils' }, '温泉': { color: '#06b6d4', icon: 'fa-hot-tub' },
-        '体験': { color: '#ec4899', icon: 'fa-palette' }, '進撃の巨人': { color: '#dc2626', icon: 'fa-fist-raised' },
-        '文化': { color: '#8b5cf6', icon: 'fa-landmark' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
+        '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#dc2626', icon: 'fa-fist-raised' },
+        '文化': { color: '#8b5cf6', icon: 'fa-palette' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
         '観光地': { color: '#0ea5e9', icon: 'fa-camera-retro' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
-        'スポーツ': { color: '#d946ef', icon: 'fa-volleyball-ball' },
+        'スポーツ': { color: '#d946ef', icon: 'fa-flag-checkered' },
         '指定緊急避難場所': { color: '#dc2626', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
@@ -336,9 +342,10 @@ function updateList() {
 }
 
 function showDetail(spot) {
+    const btn = document.getElementById('modal-select-btn');
+    btn.classList.remove('hidden');
     document.getElementById('detail-title').innerText = spot.スポット名;
     document.getElementById('detail-desc').innerText = spot.説明;
-    const btn = document.getElementById('modal-select-btn');
     const isSel = selectedSpots.some(s => s.No === spot.No);
     btn.innerText = currentMode === 'tourism' ? (isSel ? t('remove') : t('add_modal_tour')) : (isSel ? t('remove') : t('add_modal_dis'));
     btn.className = `w-full py-4 rounded-2xl text-sm font-bold shadow-lg ${isSel ? 'bg-red-500' : (currentMode==='tourism'?'bg-brand-500':'bg-red-600')} text-white`;
@@ -435,18 +442,58 @@ async function callGemini() {
 
 function renderEvents() {
     const events = [
-        { m: 2, n: t('event_1'), d: t('event_desc_1') },
-        { m: 5, n: t('event_2'), d: t('event_desc_2') },
-        { m: 7, n: t('event_3'), d: t('event_desc_3') },
-        { m: 11, n: t('event_4'), d: t('event_desc_4') }
+        { 
+            m: 2, 
+            n: t('event_1'), 
+            d: t('event_desc_1'),
+            date: currentLang === 'ja' ? '2月15日〜3月31日' : 'Feb 15 - Mar 31',
+            longDesc: currentLang === 'ja' ? '豆田町や隈町の旧家、資料館などに、江戸時代から現代までの雛人形が華やかに展示されます。日田の春を彩る歴史あるお祭りです。' : 'Beautiful Hina dolls from the Edo period to the present day are displayed in old houses and museums in Mameda and Kuma towns. A historic festival that colors spring in Hita.'
+        },
+        { 
+            m: 5, 
+            n: t('event_2'), 
+            d: t('event_desc_2'),
+            date: currentLang === 'ja' ? '5月第3土曜日・日曜日' : '3rd Sat & Sun of May',
+            longDesc: currentLang === 'ja' ? '水郷日田に夏の訪れを告げるお祭りで、夜空を彩る大花火大会が見どころです。三隈川では鵜飼いも始まり、多くの観光客で賑わいます。' : 'A festival announcing the arrival of summer in the water capital Hita, featuring a major fireworks display. Cormorant fishing begins on the Mikuma River, attracting many tourists.'
+        },
+        { 
+            m: 7, 
+            n: t('event_3'), 
+            d: t('event_desc_3'),
+            date: currentLang === 'ja' ? '7月20日を過ぎた土曜日・日曜日' : 'Sat & Sun after July 20',
+            longDesc: currentLang === 'ja' ? '約300年の伝統を誇る日田祇園祭。高さ約10mもの豪華絢爛な山鉾が、祇園囃子の音色と共に隈・豆田の町並みを練り歩きます。ユネスコ無形文化遺産。' : 'Boasting about 300 years of tradition, the Hita Gion Festival features ornate floats about 10m tall parading through the streets of Kuma and Mameda to the sound of Gion music. UNESCO Intangible Cultural Heritage.'
+        },
+        { 
+            m: 11, 
+            n: t('event_4'), 
+            d: t('event_desc_4'),
+            date: currentLang === 'ja' ? '11月第2金・土・日曜日' : '2nd Fri, Sat & Sun of Nov',
+            longDesc: currentLang === 'ja' ? '夜の豆田町や花月川河川敷が、約3万本の竹灯籠で幻想的に彩られます。「日田天領まつり」と同時開催され、夜の散策を楽しめます。' : 'The night streets of Mameda and the Kagetsu River banks are mystically illuminated by about 30,000 bamboo lanterns. Held simultaneously with the "Hita Tenryo Festival," it\'s perfect for a night stroll.'
+        }
     ];
     const c = document.getElementById('extra-content-list');
     c.innerHTML = `<h3 class="text-slate-700 font-bold text-sm mb-4 px-2">${currentLang==='ja'?'主要イベント':'Key Events'}</h3>`;
     events.forEach(ev => {
-        const d = document.createElement('div'); d.className = 'p-5 bg-white rounded-[32px] border border-slate-100 shadow-sm space-y-2';
+        const d = document.createElement('div'); 
+        d.className = 'p-5 bg-white rounded-[32px] border border-slate-100 shadow-sm space-y-2 cursor-pointer active:scale-95 transition-transform';
         d.innerHTML = `<div class="flex items-center gap-4"><div class="bg-brand-50 text-brand-500 font-black w-10 h-10 rounded-xl flex-none flex items-center justify-center text-xs shadow-inner">${ev.m}${currentLang==='ja'?'月':'M'}</div><div class="text-sm font-black text-slate-800">${ev.n}</div></div><p class="text-[10px] text-slate-400 leading-relaxed font-medium">${ev.d}</p>`;
+        d.onclick = () => showEventDetail(ev);
         c.appendChild(d);
     });
+}
+
+function showEventDetail(ev) {
+    document.getElementById('detail-title').innerText = ev.n;
+    document.getElementById('detail-desc').innerHTML = `<div class="space-y-4">
+        <div class="flex items-center gap-2 text-brand-500 font-bold">
+            <i class="fas fa-calendar-alt"></i>
+            <span>${ev.date}</span>
+        </div>
+        <p class="leading-relaxed">${ev.longDesc}</p>
+    </div>`;
+    const btn = document.getElementById('modal-select-btn');
+    btn.classList.add('hidden');
+    document.getElementById('detail-modal').classList.remove('hidden');
 }
 
 function renderDisasterInfo() {
