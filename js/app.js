@@ -11,8 +11,8 @@ let userMarker;
 const i18n = {
     ja: {
         find: "場所をさがす", shelter: "避難所をさがす", route_ai: "決定ルート・AI", route: "ルート", consult: "相談", info: "情報", event: "イベント",
-        search_tour: "観光地やキーワードで検索...", search_dis: "避難所名や場所で検索...", decide_tour: "最適化ルートの算出",
-        sel_tour: "か所えらんだよ", sel_dis: "か所の避難先を選択中", add_tour: "場所を追加", add_dis: "避難先を追加", reset: "やり直し", reset_all: "選択をリセット",
+        search_tour: "観光地やキーワードで検索...", search_dis: "避難所名や場所で検索...", decide_tour: "ルート算出",
+        sel_tour: "か所選択", sel_dis: "か所選択", add_tour: "場所を追加", add_dis: "避難先を追加", reset: "やり直し", reset_all: "選択をリセット",
         gmaps_tour: "Googleマップで出発", gmaps_dis: "Googleマップで避難開始", ai_tour_title: "AI観光ガイド", ai_dis_title: "AI防災グッズ相談",
         ai_in1_tour: "滞在時間", ai_in1_dis: "家族構成 (例: 大人2人)", ai_in2_tour: "予算", ai_in2_dis: "予算 (備蓄用)",
         ai_btn_tour: "AIにおまかせプラン作成", ai_btn_dis: "必要な備えを聞く", ai_req: "その他の要望", ai_req_tour: "例: 子供連れ、映える場所など",
@@ -545,10 +545,10 @@ function showEventDetail(ev) {
 
 function renderDisasterInfo() {
     const infoList = [
-        { name: t('h_map'), desc: t('h_map_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/saigai/11444.html", icon: "fa-map-marked-alt", color: "red" },
-        { name: t('d_portal'), desc: t('d_portal_desc'), url: "https://www.city.hita.oita.jp/bousai/index.html", icon: "fa-shield-alt", color: "blue" },
+        { name: t('h_map'), desc: t('h_map_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/bosai/saigai_sonae/0002380.html", icon: "fa-map-marked-alt", color: "red" },
+        { name: t('d_portal'), desc: t('d_portal_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/index.html", icon: "fa-shield-alt", color: "blue" },
         { name: t('oita_bousai'), desc: t('oita_bousai_desc'), url: "https://oita-bosai.jp/", icon: "fa-broadcast-tower", color: "orange" },
-        { name: t('emergency_contact'), desc: t('emergency_contact_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/index.html", icon: "fa-phone-alt", color: "green" }
+        { name: t('emergency_contact'), desc: t('emergency_contact_desc'), url: "https://www.city.hita.oita.jp/soshiki/somukikaku/bosai/kinkyu/index.html", icon: "fa-phone-alt", color: "green" }
     ];
     const c = document.getElementById('extra-content-list');
     c.innerHTML = `<h3 class="text-red-600 font-bold text-sm mb-4 px-2">${currentLang==='ja'?'防災情報':'Disaster Info'}</h3><div class="space-y-3 px-1"></div>`;
