@@ -28,7 +28,7 @@ const i18n = {
         ai_btn_tour: "AIにおまかせプラン作成", ai_btn_dis: "必要な備えを聞く", ai_req: "その他の要望", ai_req_tour: "例: 子供連れ、映える場所など",
         go_here: "ここへ行く", go_dis: "ここへ避難する", remove: "消す", add_modal_tour: "ここへ行く場所に追加", add_modal_dis: "ここを避難先に選ぶ",
         credit: "created by 大分県立日田高校 79回生 SS情報班", subtitle: "日田市総合案内コンシェルジュ",
-        history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", sightseeing: "観光地", camp: "キャンプ", sports: "スポーツ", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
+        history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", park: "公園", camp: "キャンプ", sports: "スポーツ", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
         h_map: "ハザードマップ", d_portal: "防災ポータル", oita_bousai: "おおいた防災知識の広場", emergency_contact: "救急安心センター",
         h_map_desc: "浸水想定区域や土砂災害警戒区域を確認できます。",
         d_portal_desc: "日田市の最新の防災情報をまとめて確認できます。",
@@ -46,9 +46,9 @@ const i18n = {
     en: {
         find: "Find Spots", shelter: "Find Shelters", route_ai: "Route / AI", route: "Route", consult: "Consult", info: "Info", event: "Events",
         // ... (rest of en i18n)
-        "歴史": "History", "自然": "Nature", "グルメ": "Gourmet", "温泉": "Onsen", "体験": "Craft", "進撃の巨人": "Attack on Titan", "文化": "Culture", "ショッピング": "Shopping", "観光地": "Sightseeing", "キャンプ": "Camp", "スポーツ": "Sports",
+        "歴史": "History", "自然": "Nature", "グルメ": "Gourmet", "温泉": "Onsen", "体験": "Craft", "進撃の巨人": "Attack on Titan", "文化": "Culture", "ショッピング": "Shopping", "公園": "Park", "キャンプ": "Camp", "スポーツ": "Sports",
         "指定緊急避難場所": "Emergency Shelter", "指定避難所": "Designated Shelter", "福祉避難所": "Welfare Shelter",
-        history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", sightseeing: "Sightseeing", camp: "Camp", sports: "Sports", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
+        history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", park: "Park", camp: "Camp", sports: "Sports", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
         h_map: "Hazard Map", d_portal: "Disaster Portal", oita_bousai: "Oita Disaster Info", emergency_contact: "Emergency Relief Center",
         h_map_desc: "Check flood and landslide risk areas.",
         d_portal_desc: "Unified source for Hita City's latest disaster info.",
@@ -66,9 +66,9 @@ const i18n = {
     zh: {
         find: "寻找地点", shelter: "寻找避难所", route_ai: "路线 / AI", route: "路线", consult: "咨询", info: "信息", event: "活动",
         // ... (rest of zh i18n)
-        "歴史": "历史", "自然": "自然", "グルメ": "美食", "温泉": "温泉", "体験": "体验", "進撃の巨人": "进击的巨人", "文化": "文化", "ショッピング": "购物", "観光地": "观光", "キャンプ": "露营", "スポーツ": "运动",
+        "歴史": "历史", "自然": "自然", "グルメ": "美食", "温泉": "温泉", "体験": "体验", "進撃の巨人": "进击的巨人", "文化": "文化", "ショッピング": "购物", "公園": "公园", "キャンプ": "露营", "スポーツ": "运动",
         "指定緊急避難場所": "紧急避难场所", "指定避難所": "指定避难所", "福祉避難所": "福祉避难所",
-        history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进撃の巨人", culture: "文化", shopping: "购物", sightseeing: "观光", camp: "露营", sports: "运动", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
+        history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进撃の巨人", culture: "文化", shopping: "购物", park: "公园", camp: "露营", sports: "运动", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
         h_map: "灾害地图", d_portal: "防灾门户", oita_bousai: "大分县防灾知识广场", emergency_contact: "急救安心中心",
         h_map_desc: "可以确认淹没预想区域和土石流灾害警戒区域。",
         d_portal_desc: "可以集中确认日田市最新的防灾信息。",
@@ -85,9 +85,10 @@ const i18n = {
     ko: {
         find: "장소 찾기", shelter: "대피소 찾기", route_ai: "결정 루트 / AI", route: "루트", consult: "상담", info: "정보", event: "이벤트",
         // ... (rest of ko i18n)
-        "歴史": "역사", "自然": "자연", "グルメ": "맛집", "温泉": "온천", "体験": "체험", "進撃의巨人": "진격의 거인", "文化": "문화", "ショッピング": "쇼핑", "観光地": "관광지", "キャンプ": "캠핑", "スポーツ": "스포츠",
+        "歴史": "역사", "自然": "자연", "グルメ": "맛집", "温泉": "온천", "体験": "체험", "進撃의巨人": "진격의 거인", "文化": "문화", "ショッピング": "쇼핑", "公園": "공원", "キャンプ": "캠핑", "スポーツ": "스포츠",
         "指定緊急避難場所": "지정긴급대피장소", "指定避難所": "지정대피소", "福祉避難所": "복지대피소",
-        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", sightseeing: "관광지", camp: "캠핑", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
+        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", park: "공원", camp: "캠ピング", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
+
         h_map: "해저드 맵", d_portal: "방재 포털", oita_bousai: "오이타 방재 지식의 광장", emergency_contact: "응급 안심 센터",
         h_map_desc: "침수 예상 구역 및 토사 재해 경계 구역을 확인할 수 있습니다.",
         d_portal_desc: "히타시의 최신 방재 정보를 모아서 확인할 수 있습니다.",
@@ -106,8 +107,44 @@ const i18n = {
 
 function t(key) { return i18n[currentLang][key] || key; }
 
+async function requestLocation(isStartup = false) {
+    if (!navigator.geolocation) {
+        if (!isStartup) alert(t('gps_error'));
+        return;
+    }
+
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+    };
+
+    navigator.geolocation.getCurrentPosition(
+        (p) => {
+            userLocation = [p.coords.latitude, p.coords.longitude];
+            if (map) {
+                map.flyTo(userLocation, 15);
+                if (userMarker) userMarker.setLatLng(userLocation);
+            }
+            updateList();
+        },
+        (err) => {
+            console.error("Geolocation error:", err);
+            // On startup, we don't necessarily want to alert unless it's a critical failure
+            if (!isStartup) alert(t('gps_error'));
+        },
+        options
+    );
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    initMap(); await loadAllData(); setupEventListeners(); initBottomSheet(); updateUI();
+    initMap(); 
+    await loadAllData(); 
+    setupEventListeners(); 
+    initBottomSheet(); 
+    updateUI();
+    // Automatically request location on startup
+    requestLocation(true);
 });
 
 function initMap() {
@@ -194,21 +231,7 @@ function setupEventListeners() {
     const handle = document.getElementById('drawer-handle');
     handle.onclick = () => document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('search-input').oninput = updateList;
-    document.getElementById('gps-btn').onclick = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(p => {
-                userLocation = [p.coords.latitude, p.coords.longitude];
-                map.flyTo(userLocation, 15); userMarker.setLatLng(userLocation); updateList();
-            }, (err) => {
-                console.error(err);
-                alert(t('gps_error'));
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            });
-        }
-    };
+    document.getElementById('gps-btn').onclick = () => requestLocation(false);
     document.getElementById('optimize-btn').onclick = optimizeRoute;
     document.getElementById('sort-select').onchange = (e) => {
         currentSort = e.target.value; updateList();
@@ -398,7 +421,7 @@ function getSpotStyle(spot) {
         'グルメ': { color: '#f59e0b', icon: 'fa-utensils' }, '温泉': { color: '#06b6d4', icon: 'fa-hot-tub' },
         '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#dc2626', icon: 'fa-fist-raised' },
         '文化': { color: '#8b5cf6', icon: 'fa-palette' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
-        '観光地': { color: '#0ea5e9', icon: 'fa-camera-retro' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
+        '公園': { color: '#16a34a', icon: 'fa-tree' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
         'スポーツ': { color: '#d946ef', icon: 'fa-flag-checkered' },
         '指定緊急避難場所': { color: '#dc2626', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
