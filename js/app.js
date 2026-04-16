@@ -87,15 +87,24 @@ const i18n = {
         event_3: "日田祇园祭", event_desc_3: "拥有300多年历史的联合国教科文组织非物质文化遗产节日，华丽的山鉾巡游。",
         event_4: "千年灯火", event_desc_4: "约3万盏竹灯笼点亮豆田町和花月川周边的奇幻秋夜活动。",
         total_dist: "总距离", total_time: "总时间", shelter_dist: "避难距离", shelter_time: "预计时间", thinking: "AI 正在思考...", error: "发生错误: ",
+        gps_error: "无法获取当前位置。请检查设置。",
         selection_reset: "重置所有选择",
         header_title: "日田导览"
     },
     ko: {
         find: "장소 찾기", shelter: "대피소 찾기", route_ai: "결정 루트 / AI", route: "루트", consult: "상담", info: "정보", event: "이벤트",
-        // ... (rest of ko i18n)
+        search_tour: "관광지나 키워드로 검색...", search_dis: "대피소 이름이나 장소로 검색...", decide_tour: "루트 산출",
+        sel_tour: "곳 선택됨", sel_dis: "곳 선택됨", add_tour: "장소 추가", add_dis: "대피처 추가", reset: "다시 하기", reset_all: "선택 리셋",
+        sort_dist: "현재지에서 가까운 순", sort_cat: "카테고리 순", sort_name: "이름 순",
+        filter_1km: "1km 이내", filter_open: "영업 중",
+        gmaps_tour: "Google 맵으로 출발", gmaps_dis: "Google 맵으로 대피 시작", ai_tour_title: "AI 관광 가이드", ai_dis_title: "AI 방재 용품 상담",
+        ai_in1_tour: "체류 시간", ai_in1_dis: "가족 구성 (예: 성인 2명)", ai_in2_tour: "예산", ai_in2_dis: "예산 (비축용)",
+        ai_btn_tour: "AI 추천 플랜 작성", ai_btn_dis: "필요한 대비 묻기", ai_req: "기타 요청", ai_req_tour: "예: 아이 동반, 사진 찍기 좋은 곳 등",
+        go_here: "여기로 가기", go_dis: "여기로 대피하기", remove: "삭제", add_modal_tour: "일정에 추가", add_modal_dis: "대피처로 선택",
+        credit: "오이타현립 히타고등학교 79회생 SS정보반 제작", subtitle: "히타시 종합 안내 컨시어지",
         "歴史": "역사", "自然": "자연", "グルメ": "맛집", "温泉": "온천", "体験": "체험", "進撃의巨人": "진격의 거인", "文化": "문화", "ショッピング": "쇼핑", "公園": "공원", "キャンプ": "캠핑", "スポーツ": "스포츠",
         "指定緊急避難場所": "지정긴급대피장소", "指定避難所": "지정대피소", "福祉避難所": "복지대피소",
-        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", park: "공원", camp: "캠ピング", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
+        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", park: "공원", camp: "캠핑", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
 
         h_map: "해저드 맵", d_portal: "방재 포털", oita_bousai: "오이타 방재 지식의 광장", emergency_contact: "응급 안심 센터",
         h_map_desc: "침수 예상 구역 및 토사 재해 경계 구역을 확인할 수 있습니다.",
@@ -422,6 +431,8 @@ function updateUI() {
     selCount.className = `text-[8px] md:text-[9px] font-black ${currentMode === 'tourism' ? 'text-brand-500 bg-brand-50 border-brand-100' : 'text-red-600 bg-red-50 border-red-100'} px-2 py-1.5 rounded-lg border flex-none`;
 
     document.getElementById('clear-btn').innerText = t('selection_reset').toUpperCase();
+    document.getElementById('ai-title-text').innerText = t('ai_guide').toUpperCase();
+
 
     const f1km = document.getElementById('filter-1km');
     f1km.innerText = t('filter_1km');
@@ -506,7 +517,7 @@ function setupDisasterAIUI() {
 
 function getSpotStyle(spot) {
     if (spot.sel) return { color: '#ef4444', icon: 'fa-star' };
-    if (spot.スポット名.includes('進撃の巨人')) return { color: '#dc2626', icon: 'fa-fist-raised' };
+    if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#dc2626', icon: 'fa-fist-raised' };
 
     const styles = {
         '歴史': { color: '#1b4353', icon: 'fa-landmark' }, '自然': { color: '#10b981', icon: 'fa-tree' },
@@ -518,7 +529,12 @@ function getSpotStyle(spot) {
         '指定緊急避難場所': { color: '#dc2626', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
-    return styles[spot.カテゴリ] || { color: '#64748b', icon: 'fa-map-marker-alt' };
+
+    // Find the Japanese category key that matches the current spot's category
+    const jaKeys = Object.keys(i18n.ja);
+    const originalCat = jaKeys.find(key => i18n[currentLang][key] === spot.カテゴリ) || spot.カテゴリ;
+
+    return styles[originalCat] || { color: '#64748b', icon: 'fa-map-marker-alt' };
 }
 
 function updateList() {
@@ -701,12 +717,12 @@ async function callGemini() {
 
 function renderEvents() {
     const pane = document.getElementById('pane-extra');
-    pane.innerHTML = `<h3 class="text-brand-500 font-black text-sm mb-4 uppercase tracking-wider">${t('event')}</h3>` + 
+    pane.innerHTML = `<h3 class="text-brand-500 font-black text-sm mb-4 uppercase tracking-wider">${t('event').toUpperCase()}</h3>` + 
         [1,2,3,4].map(i => `<div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4"><h4 class="font-black text-slate-800 text-sm mb-1">${t('event_'+i)}</h4><p class="text-[10px] text-slate-500 leading-relaxed font-medium">${t('event_desc_'+i)}</p></div>`).join('');
 }
 
 const disasterLinks = {
-    h_map: "https://www.city.oita.jp/site/bousai/2380.html",
+    h_map: "https://www.city.hita.oita.jp/site/bousai/2380.html",
     d_portal: "https://www.city.hita.oita.jp/site/bousai/",
     oita_bousai: "https://www.pref.oita.jp/site/bosainotishiki/",
     emergency_contact: "https://www.city.hita.oita.jp/soshiki/25/1824.html"
@@ -714,7 +730,7 @@ const disasterLinks = {
 
 function renderDisasterInfo() {
     const pane = document.getElementById('pane-extra');
-    pane.innerHTML = `<h3 class="text-red-600 font-black text-sm mb-4 uppercase tracking-wider">${t('info')}</h3>` + 
+    pane.innerHTML = `<h3 class="text-red-600 font-black text-sm mb-4 uppercase tracking-wider">${t('info').toUpperCase()}</h3>` + 
         ['h_map', 'd_portal', 'oita_bousai', 'emergency_contact'].map(k => `
             <div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4 cursor-pointer active:scale-[0.98] transition-all" onclick="window.open('${disasterLinks[k]}', '_blank')">
                 <h4 class="font-black text-slate-800 text-sm mb-1">${t(k)}</h4>
