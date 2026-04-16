@@ -334,11 +334,30 @@ function initBottomSheet() {
 
         if (window.innerWidth < 768) {
             let newY = startTranslateY + dy;
-            if (newY < 0) newY *= 0.2;
+            // Prevent dragging above the header (95px)
+            const headerHeight = 95;
+            const minTranslateY = -(window.innerHeight * 0.85 - headerHeight);
+            if (newY < minTranslateY) newY = minTranslateY;
+            
+            if (newY < 0 && newY === minTranslateY) newY = minTranslateY; // Clamp
+            else if (newY < 0) newY *= 0.2; // Resist pulling up past limit
+            
             sidebar.style.transform = `translateY(${newY}px)`;
         } else {
-            sidebar.style.left = `${startLeft + dx}px`;
-            sidebar.style.top = `${startTop + dy}px`;
+            let newTop = startTop + dy;
+            let newLeft = startLeft + dx;
+            
+            // Constraints for Desktop (Header is 105px)
+            const headerHeight = 105;
+            if (newTop < headerHeight) newTop = headerHeight;
+            
+            // Screen boundaries
+            if (newLeft < 0) newLeft = 0;
+            if (newLeft > window.innerWidth - 100) newLeft = window.innerWidth - 100;
+            if (newTop > window.innerHeight - 100) newTop = window.innerHeight - 100;
+
+            sidebar.style.left = `${newLeft}px`;
+            sidebar.style.top = `${newTop}px`;
             sidebar.style.bottom = 'auto'; 
         }
     };
