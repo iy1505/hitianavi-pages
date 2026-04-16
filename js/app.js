@@ -65,7 +65,15 @@ const i18n = {
     },
     zh: {
         find: "寻找地点", shelter: "寻找避难所", route_ai: "路线 / AI", route: "路线", consult: "咨询", info: "信息", event: "活动",
-        // ... (rest of zh i18n)
+        search_tour: "搜索景点或关键词...", search_dis: "搜索避难所或地点...", decide_tour: "计算路线",
+        sel_tour: "个已选择", sel_dis: "个已选择", add_tour: "添加地点", add_dis: "添加避难所", reset: "重试", reset_all: "全部清除",
+        sort_dist: "离我最近", sort_cat: "按类别", sort_name: "按名称",
+        filter_1km: "1公里以内", filter_open: "营业中",
+        gmaps_tour: "开始导航", gmaps_dis: "开始避难", ai_tour_title: "AI 旅游指南", ai_dis_title: "AI 防灾咨询",
+        ai_in1_tour: "停留时间", ai_in1_dis: "家庭构成 (如: 2名成人)", ai_in2_tour: "预算", ai_in2_dis: "备货预算",
+        ai_btn_tour: "生成 AI 方案", ai_btn_dis: "咨询防灾用品", ai_req: "其他要求", ai_req_tour: "例如: 亲子游, 适合拍照",
+        go_here: "去这里", go_dis: "去避难", remove: "删除", add_modal_tour: "加入行程", add_modal_dis: "选择为避难所",
+        credit: "由 大分县立日田高中 第79届 SS信息组 创建", subtitle: "日田市智能导览地图",
         "歴史": "历史", "自然": "自然", "グルメ": "美食", "温泉": "温泉", "体験": "体验", "進撃の巨人": "进击的巨人", "文化": "文化", "ショッピング": "购物", "公園": "公园", "キャンプ": "露营", "スポーツ": "运动",
         "指定緊急避難場所": "紧急避难场所", "指定避難所": "指定避难所", "福祉避難所": "福祉避难所",
         history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进撃の巨人", culture: "文化", shopping: "购物", park: "公园", camp: "露营", sports: "运动", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
@@ -228,8 +236,7 @@ function setupEventListeners() {
         };
     });
     document.querySelectorAll('[data-tab]').forEach(b => { b.onclick = () => switchTab(b.getAttribute('data-tab')); });
-    const handle = document.getElementById('drawer-handle');
-    handle.onclick = () => document.getElementById('sidebar').classList.toggle('open');
+    
     document.getElementById('search-input').oninput = updateList;
     document.getElementById('gps-btn').onclick = () => requestLocation(false);
     document.getElementById('optimize-btn').onclick = optimizeRoute;
@@ -255,33 +262,93 @@ function setupEventListeners() {
             updateUI(); 
         };
     });
+
+    // Toggle button for desktop
+    const toggle = document.getElementById('sidebar-toggle');
+    toggle.onclick = (e) => {
+        e.stopPropagation();
+        const sidebar = document.getElementById('sidebar');
+        const icon = toggle.querySelector('i');
+        sidebar.classList.toggle('collapsed');
+        if (sidebar.classList.contains('collapsed')) {
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            icon.style.transform = 'rotate(0deg)';
+        }
+    };
 }
 
 function initBottomSheet() {
     const sidebar = document.getElementById('sidebar');
     const handle = document.getElementById('drawer-handle');
-    if (!handle || window.innerWidth >= 768) return;
-    let startY, startTranslateY;
-    handle.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-        startTranslateY = matrix.m42;
+    if (!handle) return;
+
+    let startX, startY, startLeft, startTop, startTranslateY;
+    let isDragging = false;
+
+    const onStart = (e) => {
+        if (e.target.closest('button, input, select, textarea')) return;
+        isDragging = true;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+        
+        const rect = sidebar.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        if (window.innerWidth < 768) {
+            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
+            startTranslateY = matrix.m42;
+        }
+        
         sidebar.classList.add('dragging');
-    });
-    handle.addEventListener('touchmove', (e) => {
-        let newY = startTranslateY + (e.touches[0].clientY - startY);
-        if (newY < 0) newY *= 0.2; sidebar.style.transform = `translateY(${newY}px)`;
-    });
-    handle.addEventListener('touchend', (e) => {
+        document.body.style.userSelect = 'none';
+    };
+
+    const onMove = (e) => {
+        if (!isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+
+        if (window.innerWidth < 768) {
+            let newY = startTranslateY + dy;
+            if (newY < 0) newY *= 0.2;
+            sidebar.style.transform = `translateY(${newY}px)`;
+        } else {
+            sidebar.style.left = `${startLeft + dx}px`;
+            sidebar.style.top = `${startTop + dy}px`;
+            sidebar.style.bottom = 'auto'; // Disable bottom constraint while dragging
+        }
+    };
+
+    const onEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
         sidebar.classList.remove('dragging');
-        const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-        const currentY = matrix.m42;
-        const screenHeight = window.innerHeight;
-        sidebar.style.transform = '';
-        if (currentY < screenHeight * 0.2) setBottomSheetPos('full');
-        else if (currentY < screenHeight * 0.6) setBottomSheetPos('mid');
-        else setBottomSheetPos('low');
-    });
+        document.body.style.userSelect = '';
+
+        if (window.innerWidth < 768) {
+            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
+            const currentY = matrix.m42;
+            const screenHeight = window.innerHeight;
+            sidebar.style.transform = '';
+            if (currentY < screenHeight * 0.2) setBottomSheetPos('full');
+            else if (currentY < screenHeight * 0.6) setBottomSheetPos('mid');
+            else setBottomSheetPos('low');
+        }
+    };
+
+    handle.addEventListener('touchstart', onStart, {passive: true});
+    window.addEventListener('touchmove', onMove, {passive: false});
+    window.addEventListener('touchend', onEnd);
+
+    handle.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
 }
 
 function setBottomSheetPos(pos) {
@@ -304,8 +371,19 @@ function switchTab(tabName) {
         const btn = document.getElementById(`tab-btn-${t}`);
         const pane = document.getElementById(`pane-${t}`);
         if (btn) {
-            btn.classList.toggle('text-brand-500', active); btn.classList.toggle('border-brand-500', active);
-            btn.classList.toggle('text-slate-400', !active); btn.classList.toggle('border-transparent', !active);
+            const activeColor = currentMode === 'tourism' ? 'text-brand-500' : 'text-red-600';
+            const activeBorder = currentMode === 'tourism' ? 'border-brand-500' : 'border-red-600';
+            
+            btn.classList.toggle(activeColor, active); 
+            btn.classList.toggle(activeBorder, active);
+            
+            // Remove the other mode's active colors
+            const inactiveColor = currentMode === 'tourism' ? 'text-red-600' : 'text-brand-500';
+            const inactiveBorder = currentMode === 'tourism' ? 'border-red-600' : 'border-brand-500';
+            btn.classList.remove(inactiveColor, inactiveBorder);
+
+            btn.classList.toggle('text-slate-400', !active); 
+            btn.classList.toggle('border-transparent', !active);
         }
         if (pane) pane.classList.toggle('hidden', !active);
     });
@@ -330,20 +408,30 @@ function updateUI() {
     document.getElementById('tab-btn-extra').innerText = currentMode === 'tourism' ? t('event') : t('info');
     
     document.getElementById('search-input').placeholder = currentMode === 'tourism' ? t('search_tour') : t('search_dis');
-    document.getElementById('optimize-btn').innerText = t('decide_tour');
+    
+    const optBtn = document.getElementById('optimize-btn');
+    optBtn.innerText = t('decide_tour');
+    optBtn.className = `flex-1 ${currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600'} text-white py-2.5 rounded-xl text-[10px] md:text-xs font-black shadow-lg uppercase truncate`;
+
     document.getElementById('sort-opt-dist').innerText = t('sort_dist');
     document.getElementById('sort-opt-cat').innerText = t('sort_cat');
     document.getElementById('sort-opt-name').innerText = t('sort_name');
-    document.getElementById('selected-count').innerText = `${selectedSpots.length} ${currentMode === 'tourism' ? t('sel_tour') : t('sel_dis')}`;
+    
+    const selCount = document.getElementById('selected-count');
+    selCount.innerText = `${selectedSpots.length} ${currentMode === 'tourism' ? t('sel_tour') : t('sel_dis')}`;
+    selCount.className = `text-[8px] md:text-[9px] font-black ${currentMode === 'tourism' ? 'text-brand-500 bg-brand-50 border-brand-100' : 'text-red-600 bg-red-50 border-red-100'} px-2 py-1.5 rounded-lg border flex-none`;
+
     document.getElementById('clear-btn').innerText = t('selection_reset').toUpperCase();
 
     const f1km = document.getElementById('filter-1km');
     f1km.innerText = t('filter_1km');
-    f1km.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filter1km ? 'bg-brand-500 text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
+    const f1kmColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
+    f1km.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filter1km ? f1kmColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
     
     const fOpen = document.getElementById('filter-open');
     fOpen.innerText = t('filter_open');
-    fOpen.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filterOpen ? 'bg-brand-500 text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
+    const fOpenColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
+    fOpen.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filterOpen ? fOpenColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
 
     if (currentMode === 'tourism') { setupTourismAIUI(); renderEvents(); }
     else { setupDisasterAIUI(); renderDisasterInfo(); }
@@ -365,6 +453,8 @@ function updateUI() {
         b.onclick = () => { currentCategory = cat; updateUI(); };
         chips.appendChild(b);
     });
+    // Update tab colors
+    switchTab(document.querySelector('[data-tab].text-brand-500, [data-tab].text-red-600')?.getAttribute('data-tab') || 'list');
     updateList();
 }
 
@@ -374,6 +464,7 @@ function setupTourismAIUI() {
     document.getElementById('ai-input-2').placeholder = t('ai_in2_tour');
     document.getElementById('ai-request').placeholder = t('ai_req_tour');
     document.getElementById('ai-btn').innerText = t('ai_btn_tour');
+    document.getElementById('ai-btn').className = 'w-full bg-brand-accent text-white py-4 rounded-[20px] text-sm font-black shadow-lg uppercase transition-all active:scale-95';
     const interests = document.getElementById('ai-interests');
     interests.innerHTML = '';
     ['history', 'nature', 'gourmet', 'onsen', 'experience', 'culture', 'shopping', 'sightseeing', 'camp', 'sports', 'shingeki'].forEach(v => {
@@ -396,6 +487,7 @@ function setupDisasterAIUI() {
     document.getElementById('ai-input-2').placeholder = t('ai_in2_dis');
     document.getElementById('ai-request').placeholder = t('ai_req');
     document.getElementById('ai-btn').innerText = t('ai_btn_dis');
+    document.getElementById('ai-btn').className = 'w-full bg-red-600 text-white py-4 rounded-[20px] text-sm font-black shadow-lg uppercase transition-all active:scale-95';
     const interests = document.getElementById('ai-interests');
     interests.innerHTML = '';
     ['food', 'hygiene', 'blackout', 'medicine', 'clothing', 'baby', 'pet'].forEach(v => {
@@ -459,10 +551,21 @@ function updateList() {
         }).addTo(map);
         marker.on('click', () => { showDetail(spot); setBottomSheetPos('low'); });
         markers.push(marker);
+        
         const card = document.createElement('div');
-        card.className = `p-5 rounded-[32px] border transition-all ${spot.sel ? 'bg-brand-50 border-brand-300 shadow-md ring-1 ring-brand-500/10' : 'bg-white border-slate-100 shadow-sm'}`;
+        const activeCardClass = currentMode === 'tourism' 
+            ? 'bg-brand-50 border-brand-300 shadow-md ring-1 ring-brand-500/10' 
+            : 'bg-red-50 border-red-300 shadow-md ring-1 ring-red-500/10';
+        card.className = `p-5 rounded-[32px] border transition-all ${spot.sel ? activeCardClass : 'bg-white border-slate-100 shadow-sm'}`;
+        
         const btnT = currentMode === 'tourism' ? (spot.sel ? t('remove') : t('go_here')) : (spot.sel ? t('remove') : t('go_dis'));
-        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${spot.説明.split(/[。！!？?]/)[0]}。</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${t(spot.カテゴリ.toLowerCase())}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${spot.sel ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-slate-50 text-slate-600'}">${btnT}</button><button class="d-btn px-4 py-2.5 rounded-2xl bg-slate-50 text-slate-400"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
+        const btnColor = spot.sel 
+            ? 'bg-red-500 text-white shadow-lg shadow-red-200' 
+            : (currentMode === 'tourism' ? 'bg-slate-50 text-slate-600' : 'bg-red-50 text-red-600 border border-red-100');
+        
+        const dBtnColor = currentMode === 'tourism' ? 'bg-slate-50 text-slate-400' : 'bg-red-50 text-red-400 border border-red-100';
+        
+        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${spot.説明.split(/[。！!？?]/)[0]}。</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${t(spot.カテゴリ.toLowerCase())}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${btnColor}">${btnT}</button><button class="d-btn px-4 py-2.5 rounded-2xl ${dBtnColor} transition-all"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
         card.onclick = () => { map.flyTo([spot.緯度, spot.経度], 15); };
         card.querySelector('.s-btn').onclick = (e) => { e.stopPropagation(); toggleSelect(spot); };
         card.querySelector('.d-btn').onclick = (e) => { e.stopPropagation(); showDetail(spot); };
@@ -527,11 +630,26 @@ function optimizeRoute() {
     }
     const h = Math.floor(totalTime / 60), m = Math.round(totalTime % 60);
     const timeStr = h > 0 ? `${h}${currentLang==='ja'?'時間':'h'}${m}${currentLang==='ja'?'分':'m'}` : `${m}${currentLang==='ja'?'分':'m'}`;
+    
     const stats = document.getElementById('route-stats');
-    stats.innerHTML = `<div class="flex justify-between items-center bg-white/50 p-3 rounded-2xl mb-2"><div class="text-center flex-1 border-r border-brand-100"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_dist')}</div><div class="text-xs font-black text-brand-500">${dist.toFixed(2)}km</div></div><div class="text-center flex-1"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_time')}</div><div class="text-xs font-black text-brand-500">${timeStr}</div></div></div><div class="space-y-1.5 mt-3">${route.map((s,i)=>`<div class="text-[11px] font-bold flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-brand-500 text-white flex items-center justify-center text-[8px]">${i+1}</span>${s.スポット名}</div>`).join('')}</div>`;
-    document.getElementById('route-info').classList.remove('hidden');
+    const accentColor = currentMode === 'tourism' ? 'text-brand-500' : 'text-red-600';
+    const bgColor = currentMode === 'tourism' ? 'bg-brand-50' : 'bg-red-50';
+    const borderColor = currentMode === 'tourism' ? 'border-brand-100' : 'border-red-100';
+    const bulletBg = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
+
+    stats.innerHTML = `<div class="flex justify-between items-center bg-white/50 p-3 rounded-2xl mb-2"><div class="text-center flex-1 border-r ${borderColor}"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_dist')}</div><div class="text-xs font-black ${accentColor}">${dist.toFixed(2)}km</div></div><div class="text-center flex-1"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_time')}</div><div class="text-xs font-black ${accentColor}">${timeStr}</div></div></div><div class="space-y-1.5 mt-3">${route.map((s,i)=>`<div class="text-[11px] font-bold flex items-center gap-2"><span class="w-4 h-4 rounded-full ${bulletBg} text-white flex items-center justify-center text-[8px]">${i+1}</span>${s.スポット名}</div>`).join('')}</div>`;
+    
+    const routeInfo = document.getElementById('route-info');
+    routeInfo.className = `${bgColor} p-5 rounded-[32px] border ${borderColor} shadow-sm space-y-4 w-full box-border`;
+    routeInfo.classList.remove('hidden');
+    
     document.getElementById('route-title-text').innerText = t('decide_tour');
-    document.getElementById('add-more-btn').innerText = currentMode === 'tourism' ? t('add_tour') : t('add_dis');
+    document.getElementById('route-title-text').parentElement.className = `${accentColor} font-black text-sm flex items-center gap-2`;
+
+    const addBtn = document.getElementById('add-more-btn');
+    addBtn.innerText = currentMode === 'tourism' ? t('add_tour') : t('add_dis');
+    addBtn.className = `bg-white ${currentMode === 'tourism' ? 'text-brand-500 border-brand-100' : 'text-red-600 border-red-100'} border py-3 rounded-2xl text-[10px] font-bold shadow-sm`;
+
     document.getElementById('reset-route-btn').innerText = t('reset');
     document.getElementById('gmaps-link-btn').innerText = currentMode === 'tourism' ? t('gmaps_tour') : t('gmaps_dis');
     const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation[0]},${userLocation[1]}&destination=${route[route.length-1].緯度},${route[route.length-1].経度}&waypoints=${route.slice(0,-1).map(s=>`${s.緯度},${s.経度}`).join('|')}&travelmode=${currentMode==='tourism'?'driving':'walking'}`;
@@ -601,7 +719,7 @@ function renderDisasterInfo() {
             <div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4 cursor-pointer active:scale-[0.98] transition-all" onclick="window.open('${disasterLinks[k]}', '_blank')">
                 <h4 class="font-black text-slate-800 text-sm mb-1">${t(k)}</h4>
                 <p class="text-[10px] text-slate-500 leading-relaxed font-medium mb-3">${t(k+'_desc')}</p>
-                <button class="w-full py-2.5 rounded-xl bg-slate-50 text-slate-400 text-[10px] font-bold">
+                <button class="w-full py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold transition-all hover:bg-red-100">
                     <i class="fas fa-external-link-alt mr-2"></i>OPEN
                 </button>
             </div>`).join('');

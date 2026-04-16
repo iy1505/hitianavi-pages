@@ -31,13 +31,23 @@
             .leaflet-bottom.leaflet-right { bottom: 120px !important; transition: bottom 0.4s; }
         }
         @media (min-width: 768px) {
-            #sidebar { top: 110px; left: 24px; bottom: 24px; width: 380px; height: auto; max-height: calc(100vh - 134px); transform: none !important; }
-            #drawer-handle { display: none; }
+            #sidebar { top: 110px; left: 24px; width: 380px; height: calc(100vh - 134px); transform: none; }
+            #sidebar.collapsed { transform: translateX(-360px) !important; }
+            #sidebar.dragging { transition: none; }
         }
         .custom-scroll { -webkit-overflow-scrolling: touch; overflow-y: auto; overflow-x: hidden; }
         .custom-scroll::-webkit-scrollbar { width: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .lang-btn.active { background-color: #1b4353; color: white; border-color: #1b4353; }
+        #sidebar-toggle { display: none; }
+        @media (min-width: 768px) {
+            #sidebar-toggle { 
+                display: flex; position: absolute; right: -32px; top: 12px; 
+                width: 32px; height: 32px; background: white; border-radius: 0 8px 8px 0; 
+                box-shadow: 4px 0 10px rgba(0,0,0,0.1); align-items: center; justify-content: center; cursor: pointer; pointer-events: auto;
+                border: 1px solid #f1f5f9; border-left: none;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -75,8 +85,11 @@
     <div id="map"></div>
 
     <aside id="sidebar" class="pointer-events-none">
-        <div id="drawer-handle" class="w-full flex justify-center p-3 pointer-events-auto cursor-ns-resize">
+        <div id="drawer-handle" class="w-full flex justify-center p-3 pointer-events-auto cursor-move select-none relative">
             <div class="w-12 h-1 bg-slate-400/30 rounded-full"></div>
+            <div id="sidebar-toggle" class="text-slate-400 hover:text-brand-500 transition-colors">
+                <i class="fas fa-chevron-left transition-transform duration-300"></i>
+            </div>
         </div>
 
         <div class="bg-white/95 backdrop-blur-xl md:rounded-[24px] rounded-t-[32px] shadow-2xl border border-white/20 flex-1 flex flex-col overflow-hidden pointer-events-auto">
