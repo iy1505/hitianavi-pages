@@ -272,17 +272,24 @@ function setupEventListeners() {
         };
     });
 
-    // Toggle button for desktop
-    const toggle = document.getElementById('sidebar-toggle');
-    toggle.onclick = (e) => {
-        e.stopPropagation();
-        const sidebar = document.getElementById('sidebar');
-        const icon = toggle.querySelector('i');
-        sidebar.classList.toggle('collapsed');
-        if (sidebar.classList.contains('collapsed')) {
-            icon.style.transform = 'rotate(180deg)';
+    // Handle click to cycle states (for better affordance)
+    const handle = document.getElementById('drawer-handle');
+    let lastY = 0;
+    handle.onclick = (e) => {
+        if (e.target.closest('input, label')) return;
+        if (window.innerWidth < 768) {
+            const sidebar = document.getElementById('sidebar');
+            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
+            const currentY = matrix.m42;
+            const screenHeight = window.innerHeight;
+            
+            // Cycle: low -> mid -> full -> low
+            if (currentY > screenHeight * 0.5) setBottomSheetPos('mid');
+            else if (currentY > screenHeight * 0.1) setBottomSheetPos('full');
+            else setBottomSheetPos('low');
         } else {
-            icon.style.transform = 'rotate(0deg)';
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
         }
     };
 }
@@ -294,10 +301,12 @@ function initBottomSheet() {
 
     let startX, startY, startLeft, startTop, startTranslateY;
     let isDragging = false;
+    let startTime;
 
     const onStart = (e) => {
-        if (e.target.closest('button, input, select, textarea')) return;
+        if (e.target.closest('input, label')) return;
         isDragging = true;
+        startTime = Date.now();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         startX = clientX;
@@ -330,7 +339,7 @@ function initBottomSheet() {
         } else {
             sidebar.style.left = `${startLeft + dx}px`;
             sidebar.style.top = `${startTop + dy}px`;
-            sidebar.style.bottom = 'auto'; // Disable bottom constraint while dragging
+            sidebar.style.bottom = 'auto'; 
         }
     };
 
@@ -340,14 +349,25 @@ function initBottomSheet() {
         sidebar.classList.remove('dragging');
         document.body.style.userSelect = '';
 
+        const duration = Date.now() - startTime;
+        const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        const dy = clientY - startY;
+
         if (window.innerWidth < 768) {
             const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
             const currentY = matrix.m42;
             const screenHeight = window.innerHeight;
             sidebar.style.transform = '';
-            if (currentY < screenHeight * 0.2) setBottomSheetPos('full');
-            else if (currentY < screenHeight * 0.6) setBottomSheetPos('mid');
-            else setBottomSheetPos('low');
+            
+            // Fast swipe detection
+            if (duration < 300 && Math.abs(dy) > 30) {
+                if (dy < 0) setBottomSheetPos(currentY > screenHeight * 0.4 ? 'mid' : 'full');
+                else setBottomSheetPos(currentY < screenHeight * 0.4 ? 'mid' : 'low');
+            } else {
+                if (currentY < screenHeight * 0.2) setBottomSheetPos('full');
+                else if (currentY < screenHeight * 0.6) setBottomSheetPos('mid');
+                else setBottomSheetPos('low');
+            }
         }
     };
 
@@ -362,10 +382,14 @@ function initBottomSheet() {
 
 function setBottomSheetPos(pos) {
     const sidebar = document.getElementById('sidebar');
-    if (window.innerWidth >= 768) return;
-    if (pos === 'full') sidebar.classList.add('open'), sidebar.style.transform = 'translateY(0)';
-    else if (pos === 'mid') sidebar.classList.add('open'), sidebar.style.transform = 'translateY(45vh)';
-    else sidebar.classList.remove('open'), sidebar.style.transform = '';
+    if (window.innerWidth < 768) {
+        if (pos === 'full') sidebar.style.transform = 'translateY(0)', sidebar.classList.add('open');
+        else if (pos === 'mid') sidebar.style.transform = 'translateY(45vh)', sidebar.classList.add('open');
+        else sidebar.style.transform = '', sidebar.classList.remove('open');
+    } else {
+        if (pos === 'low') sidebar.classList.add('collapsed');
+        else sidebar.classList.remove('collapsed');
+    }
 }
 
 function resetAll() {
@@ -380,15 +404,15 @@ function switchTab(tabName) {
         const btn = document.getElementById(`tab-btn-${t}`);
         const pane = document.getElementById(`pane-${t}`);
         if (btn) {
-            const activeColor = currentMode === 'tourism' ? 'text-brand-500' : 'text-red-600';
-            const activeBorder = currentMode === 'tourism' ? 'border-brand-500' : 'border-red-600';
+            const activeColor = currentMode === 'tourism' ? 'text-brand-500' : 'text-disaster-600';
+            const activeBorder = currentMode === 'tourism' ? 'border-brand-500' : 'border-disaster-600';
             
             btn.classList.toggle(activeColor, active); 
             btn.classList.toggle(activeBorder, active);
             
             // Remove the other mode's active colors
-            const inactiveColor = currentMode === 'tourism' ? 'text-red-600' : 'text-brand-500';
-            const inactiveBorder = currentMode === 'tourism' ? 'border-red-600' : 'border-brand-500';
+            const inactiveColor = currentMode === 'tourism' ? 'text-disaster-600' : 'text-brand-500';
+            const inactiveBorder = currentMode === 'tourism' ? 'border-disaster-600' : 'border-brand-500';
             btn.classList.remove(inactiveColor, inactiveBorder);
 
             btn.classList.toggle('text-slate-400', !active); 
@@ -420,7 +444,7 @@ function updateUI() {
     
     const optBtn = document.getElementById('optimize-btn');
     optBtn.innerText = t('decide_tour');
-    optBtn.className = `flex-1 ${currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600'} text-white py-2.5 rounded-xl text-[10px] md:text-xs font-black shadow-lg uppercase truncate`;
+    optBtn.className = `flex-1 ${currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-500'} text-white py-2.5 rounded-xl text-[10px] md:text-xs font-black shadow-lg uppercase truncate`;
 
     document.getElementById('sort-opt-dist').innerText = t('sort_dist');
     document.getElementById('sort-opt-cat').innerText = t('sort_cat');
@@ -428,7 +452,7 @@ function updateUI() {
     
     const selCount = document.getElementById('selected-count');
     selCount.innerText = `${selectedSpots.length} ${currentMode === 'tourism' ? t('sel_tour') : t('sel_dis')}`;
-    selCount.className = `text-[8px] md:text-[9px] font-black ${currentMode === 'tourism' ? 'text-brand-500 bg-brand-50 border-brand-100' : 'text-red-600 bg-red-50 border-red-100'} px-2 py-1.5 rounded-lg border flex-none`;
+    selCount.className = `text-[8px] md:text-[9px] font-black ${currentMode === 'tourism' ? 'text-brand-500 bg-brand-50 border-brand-100' : 'text-disaster-600 bg-disaster-50 border-disaster-100'} px-2 py-1.5 rounded-lg border flex-none`;
 
     document.getElementById('clear-btn').innerText = t('selection_reset').toUpperCase();
     document.getElementById('ai-title-text').innerText = t('ai_guide').toUpperCase();
@@ -436,12 +460,12 @@ function updateUI() {
 
     const f1km = document.getElementById('filter-1km');
     f1km.innerText = t('filter_1km');
-    const f1kmColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
+    const f1kmColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
     f1km.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filter1km ? f1kmColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
     
     const fOpen = document.getElementById('filter-open');
     fOpen.innerText = t('filter_open');
-    const fOpenColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
+    const fOpenColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
     fOpen.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filterOpen ? fOpenColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
 
     if (currentMode === 'tourism') { setupTourismAIUI(); renderEvents(); }
@@ -453,7 +477,7 @@ function updateUI() {
     ['all', ...new Set(data.map(s => s.カテゴリ))].forEach(cat => {
         const b = document.createElement('button');
         const active = currentCategory === cat;
-        const color = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
+        const color = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
         b.className = `flex-none px-4 py-2 rounded-xl text-[10px] font-black border transition-all ${active ? color + ' text-white border-transparent shadow-md' : 'bg-white text-slate-400 border-slate-200'}`;
         
         let label = cat;
@@ -465,7 +489,7 @@ function updateUI() {
         chips.appendChild(b);
     });
     // Update tab colors
-    switchTab(document.querySelector('[data-tab].text-brand-500, [data-tab].text-red-600')?.getAttribute('data-tab') || 'list');
+    switchTab(document.querySelector('[data-tab].text-brand-500, [data-tab].text-disaster-600')?.getAttribute('data-tab') || 'list');
     updateList();
 }
 
@@ -498,7 +522,7 @@ function setupDisasterAIUI() {
     document.getElementById('ai-input-2').placeholder = t('ai_in2_dis');
     document.getElementById('ai-request').placeholder = t('ai_req');
     document.getElementById('ai-btn').innerText = t('ai_btn_dis');
-    document.getElementById('ai-btn').className = 'w-full bg-red-600 text-white py-4 rounded-[20px] text-sm font-black shadow-lg uppercase transition-all active:scale-95';
+    document.getElementById('ai-btn').className = 'w-full bg-disaster-600 text-white py-4 rounded-[20px] text-sm font-black shadow-lg uppercase transition-all active:scale-95';
     const interests = document.getElementById('ai-interests');
     interests.innerHTML = '';
     ['food', 'hygiene', 'blackout', 'medicine', 'clothing', 'baby', 'pet'].forEach(v => {
@@ -507,7 +531,7 @@ function setupDisasterAIUI() {
         b.innerText = t(v);
         b.setAttribute('data-value', v);
         b.onclick = () => {
-            const c = 'bg-red-600';
+            const c = 'bg-disaster-600';
             b.classList.toggle(c); b.classList.toggle('text-white'); b.classList.toggle('border-transparent');
             b.classList.toggle('bg-white'); b.classList.toggle('text-slate-500');
         };
@@ -516,17 +540,17 @@ function setupDisasterAIUI() {
 }
 
 function getSpotStyle(spot) {
-    if (spot.sel) return { color: '#ef4444', icon: 'fa-star' };
-    if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#dc2626', icon: 'fa-fist-raised' };
+    if (spot.sel) return { color: '#EF4123', icon: 'fa-star' };
+    if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#EF4123', icon: 'fa-fist-raised' };
 
     const styles = {
         '歴史': { color: '#1b4353', icon: 'fa-landmark' }, '自然': { color: '#10b981', icon: 'fa-tree' },
         'グルメ': { color: '#f59e0b', icon: 'fa-utensils' }, '温泉': { color: '#06b6d4', icon: 'fa-hot-tub' },
-        '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#dc2626', icon: 'fa-fist-raised' },
+        '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#EF4123', icon: 'fa-fist-raised' },
         '文化': { color: '#8b5cf6', icon: 'fa-palette' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
         '公園': { color: '#16a34a', icon: 'fa-tree' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
         'スポーツ': { color: '#d946ef', icon: 'fa-flag-checkered' },
-        '指定緊急避難場所': { color: '#dc2626', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
+        '指定緊急避難場所': { color: '#EF4123', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
 
@@ -571,15 +595,15 @@ function updateList() {
         const card = document.createElement('div');
         const activeCardClass = currentMode === 'tourism' 
             ? 'bg-brand-50 border-brand-300 shadow-md ring-1 ring-brand-500/10' 
-            : 'bg-red-50 border-red-300 shadow-md ring-1 ring-red-500/10';
+            : 'bg-disaster-50 border-disaster-300 shadow-md ring-1 ring-disaster-500/10';
         card.className = `p-5 rounded-[32px] border transition-all ${spot.sel ? activeCardClass : 'bg-white border-slate-100 shadow-sm'}`;
         
         const btnT = currentMode === 'tourism' ? (spot.sel ? t('remove') : t('go_here')) : (spot.sel ? t('remove') : t('go_dis'));
         const btnColor = spot.sel 
-            ? 'bg-red-500 text-white shadow-lg shadow-red-200' 
-            : (currentMode === 'tourism' ? 'bg-slate-50 text-slate-600' : 'bg-red-50 text-red-600 border border-red-100');
+            ? 'bg-disaster-500 text-white shadow-lg shadow-disaster-200' 
+            : (currentMode === 'tourism' ? 'bg-slate-50 text-slate-600' : 'bg-disaster-50 text-disaster-600 border border-disaster-100');
         
-        const dBtnColor = currentMode === 'tourism' ? 'bg-slate-50 text-slate-400' : 'bg-red-50 text-red-400 border border-red-100';
+        const dBtnColor = currentMode === 'tourism' ? 'bg-slate-50 text-slate-400' : 'bg-disaster-50 text-disaster-400 border border-disaster-100';
         
         card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${spot.説明.split(/[。！!？?]/)[0]}。</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${t(spot.カテゴリ.toLowerCase())}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${btnColor}">${btnT}</button><button class="d-btn px-4 py-2.5 rounded-2xl ${dBtnColor} transition-all"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
         card.onclick = () => { map.flyTo([spot.緯度, spot.経度], 15); };
@@ -596,7 +620,7 @@ function showDetail(spot) {
     document.getElementById('detail-desc').innerText = spot.説明;
     const isSel = selectedSpots.some(s => s.No === spot.No);
     btn.innerText = currentMode === 'tourism' ? (isSel ? t('remove') : t('add_modal_tour')) : (isSel ? t('remove') : t('add_modal_dis'));
-    btn.className = `w-full py-4 rounded-2xl text-sm font-bold shadow-lg ${isSel ? 'bg-red-500' : (currentMode==='tourism'?'bg-brand-500':'bg-red-600')} text-white`;
+    btn.className = `w-full py-4 rounded-2xl text-sm font-bold shadow-lg ${isSel ? 'bg-disaster-500' : (currentMode==='tourism'?'bg-brand-500':'bg-disaster-600')} text-white`;
     btn.onclick = () => { toggleSelect(spot); closeModal(); };
     document.getElementById('detail-modal').classList.remove('hidden');
 }
@@ -648,10 +672,10 @@ function optimizeRoute() {
     const timeStr = h > 0 ? `${h}${currentLang==='ja'?'時間':'h'}${m}${currentLang==='ja'?'分':'m'}` : `${m}${currentLang==='ja'?'分':'m'}`;
     
     const stats = document.getElementById('route-stats');
-    const accentColor = currentMode === 'tourism' ? 'text-brand-500' : 'text-red-600';
-    const bgColor = currentMode === 'tourism' ? 'bg-brand-50' : 'bg-red-50';
-    const borderColor = currentMode === 'tourism' ? 'border-brand-100' : 'border-red-100';
-    const bulletBg = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-red-600';
+    const accentColor = currentMode === 'tourism' ? 'text-brand-500' : 'text-disaster-600';
+    const bgColor = currentMode === 'tourism' ? 'bg-brand-50' : 'bg-disaster-50';
+    const borderColor = currentMode === 'tourism' ? 'border-brand-100' : 'border-disaster-100';
+    const bulletBg = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
 
     stats.innerHTML = `<div class="flex justify-between items-center bg-white/50 p-3 rounded-2xl mb-2"><div class="text-center flex-1 border-r ${borderColor}"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_dist')}</div><div class="text-xs font-black ${accentColor}">${dist.toFixed(2)}km</div></div><div class="text-center flex-1"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_time')}</div><div class="text-xs font-black ${accentColor}">${timeStr}</div></div></div><div class="space-y-1.5 mt-3">${route.map((s,i)=>`<div class="text-[11px] font-bold flex items-center gap-2"><span class="w-4 h-4 rounded-full ${bulletBg} text-white flex items-center justify-center text-[8px]">${i+1}</span>${s.スポット名}</div>`).join('')}</div>`;
     
@@ -664,14 +688,14 @@ function optimizeRoute() {
 
     const addBtn = document.getElementById('add-more-btn');
     addBtn.innerText = currentMode === 'tourism' ? t('add_tour') : t('add_dis');
-    addBtn.className = `bg-white ${currentMode === 'tourism' ? 'text-brand-500 border-brand-100' : 'text-red-600 border-red-100'} border py-3 rounded-2xl text-[10px] font-bold shadow-sm`;
+    addBtn.className = `bg-white ${currentMode === 'tourism' ? 'text-brand-500 border-brand-100' : 'text-disaster-600 border-disaster-100'} border py-3 rounded-2xl text-[10px] font-bold shadow-sm`;
 
     document.getElementById('reset-route-btn').innerText = t('reset');
     document.getElementById('gmaps-link-btn').innerText = currentMode === 'tourism' ? t('gmaps_tour') : t('gmaps_dis');
     const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation[0]},${userLocation[1]}&destination=${route[route.length-1].緯度},${route[route.length-1].経度}&waypoints=${route.slice(0,-1).map(s=>`${s.緯度},${s.経度}`).join('|')}&travelmode=${currentMode==='tourism'?'driving':'walking'}`;
     document.getElementById('gmaps-link-btn').onclick = () => window.open(url, '_blank');
     if (window.polyline) map.removeLayer(window.polyline);
-    window.polyline = L.polyline([userLocation, ...route.map(s=>[s.緯度,s.経度])], {color: currentMode==='tourism'?'#1b4353':'#dc2626', weight: 5, opacity: 0.5, dashArray: '10, 10'}).addTo(map);
+    window.polyline = L.polyline([userLocation, ...route.map(s=>[s.緯度,s.経度])], {color: currentMode==='tourism'?'#1b4353':'#EF4123', weight: 5, opacity: 0.5, dashArray: '10, 10'}).addTo(map);
     map.fitBounds(window.polyline.getBounds(), { padding: [60, 60] });
     switchTab('info');
 }
@@ -694,7 +718,7 @@ async function callGemini() {
     const thinking = document.getElementById('ai-thinking');
     thinking.classList.remove('hidden');
     try {
-        const interests = Array.from(document.querySelectorAll('.interest-chip.bg-brand-500, .interest-chip.bg-red-600')).map(b => b.innerText);
+        const interests = Array.from(document.querySelectorAll('.interest-chip.bg-brand-500, .interest-chip.bg-disaster-600')).map(b => b.innerText);
         const req = document.getElementById('ai-request').value;
         const in1 = document.getElementById('ai-input-1').value;
         const in2 = document.getElementById('ai-input-2').value;
@@ -730,12 +754,12 @@ const disasterLinks = {
 
 function renderDisasterInfo() {
     const pane = document.getElementById('pane-extra');
-    pane.innerHTML = `<h3 class="text-red-600 font-black text-sm mb-4 uppercase tracking-wider">${t('info').toUpperCase()}</h3>` + 
+    pane.innerHTML = `<h3 class="text-disaster-600 font-black text-sm mb-4 uppercase tracking-wider">${t('info').toUpperCase()}</h3>` + 
         ['h_map', 'd_portal', 'oita_bousai', 'emergency_contact'].map(k => `
             <div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4 cursor-pointer active:scale-[0.98] transition-all" onclick="window.open('${disasterLinks[k]}', '_blank')">
                 <h4 class="font-black text-slate-800 text-sm mb-1">${t(k)}</h4>
                 <p class="text-[10px] text-slate-500 leading-relaxed font-medium mb-3">${t(k+'_desc')}</p>
-                <button class="w-full py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold transition-all hover:bg-red-100">
+                <button class="w-full py-2.5 rounded-xl bg-disaster-50 text-disaster-600 border border-disaster-100 text-[10px] font-bold transition-all hover:bg-disaster-100">
                     <i class="fas fa-external-link-alt mr-2"></i>OPEN
                 </button>
             </div>`).join('');
