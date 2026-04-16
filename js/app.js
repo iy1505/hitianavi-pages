@@ -544,13 +544,20 @@ function getSpotStyle(spot) {
     if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#EF4123', icon: 'fa-fist-raised' };
 
     const styles = {
-        '歴史': { color: '#1b4353', icon: 'fa-landmark' }, '自然': { color: '#10b981', icon: 'fa-tree' },
-        'グルメ': { color: '#f59e0b', icon: 'fa-utensils' }, '温泉': { color: '#06b6d4', icon: 'fa-hot-tub' },
-        '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#EF4123', icon: 'fa-fist-raised' },
-        '文化': { color: '#8b5cf6', icon: 'fa-palette' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
-        '公園': { color: '#16a34a', icon: 'fa-tree' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
-        'スポーツ': { color: '#d946ef', icon: 'fa-flag-checkered' },
-        '指定緊急避難場所': { color: '#EF4123', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
+        '歴史': { color: '#4f46e5', icon: 'fa-landmark' },      // Indigo
+        '自然': { color: '#059669', icon: 'fa-tree' },          // Emerald
+        'グルメ': { color: '#d97706', icon: 'fa-utensils' },      // Amber
+        '温泉': { color: '#0891b2', icon: 'fa-hot-tub' },       // Cyan
+        '体験': { color: '#db2777', icon: 'fa-hiking' },        // Pink
+        '進撃の巨人': { color: '#EF4123', icon: 'fa-fist-raised' }, // Disaster/Titan Red
+        '文化': { color: '#7c3aed', icon: 'fa-palette' },       // Violet
+        'ショッピング': { color: '#e11d48', icon: 'fa-shopping-bag' }, // Rose
+        '公園': { color: '#16a34a', icon: 'fa-tree' },          // Green
+        'キャンプ': { color: '#15803d', icon: 'fa-campground' },    // Green
+        'スポーツ': { color: '#c026d3', icon: 'fa-flag-checkered' }, // Fuchsia
+        '観光地': { color: '#2563eb', icon: 'fa-camera' },       // Blue
+        '指定緊急避難場所': { color: '#EF4123', icon: 'fa-running' },
+        '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
 
