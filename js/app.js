@@ -283,13 +283,17 @@ function setupEventListeners() {
             const currentY = matrix.m42;
             const screenHeight = window.innerHeight;
             
+            // Calculate limit to stay below header (95px)
+            const minY = Math.max(0, 95 + 15 - (screenHeight * 0.15));
+
             // Cycle: low -> mid -> full -> low
             if (currentY > screenHeight * 0.5) setBottomSheetPos('mid');
-            else if (currentY > screenHeight * 0.1) setBottomSheetPos('full');
+            else if (currentY > minY + 20) setBottomSheetPos('full');
             else setBottomSheetPos('low');
         } else {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            setBottomSheetPos(isCollapsed ? 'full' : 'low');
         }
     };
 }
@@ -334,13 +338,20 @@ function initBottomSheet() {
 
         if (window.innerWidth < 768) {
             let newY = startTranslateY + dy;
-            // Prevent dragging above the header (95px)
-            const headerHeight = 95;
-            const minTranslateY = -(window.innerHeight * 0.85 - headerHeight);
-            if (newY < minTranslateY) newY = minTranslateY;
+            const screenHeight = window.innerHeight;
             
-            if (newY < 0 && newY === minTranslateY) newY = minTranslateY; // Clamp
-            else if (newY < 0) newY *= 0.2; // Resist pulling up past limit
+            // Prevent dragging above the header (95px)
+            const minY = Math.max(0, 95 + 15 - (screenHeight * 0.15));
+            
+            // Limit downward drag
+            const maxTranslateY = screenHeight * 0.85;
+            if (newY > maxTranslateY) newY = maxTranslateY;
+
+            if (newY < minY) {
+                const diff = minY - newY;
+                newY = minY - (diff * 0.2); // Resist pulling up past limit
+                if (newY < minY - 20) newY = minY - 20; // Hard clamp
+            }
             
             sidebar.style.transform = `translateY(${newY}px)`;
         } else {
@@ -378,6 +389,8 @@ function initBottomSheet() {
             const screenHeight = window.innerHeight;
             sidebar.style.transform = '';
             
+            const minY = Math.max(0, 95 + 15 - (screenHeight * 0.15));
+            
             // Fast swipe detection
             if (duration < 300 && Math.abs(dy) > 30) {
                 if (dy < 0) setBottomSheetPos(currentY > screenHeight * 0.4 ? 'mid' : 'full');
@@ -402,10 +415,17 @@ function initBottomSheet() {
 function setBottomSheetPos(pos) {
     const sidebar = document.getElementById('sidebar');
     if (window.innerWidth < 768) {
-        if (pos === 'full') sidebar.style.transform = 'translateY(0)', sidebar.classList.add('open');
+        const screenHeight = window.innerHeight;
+        const minY = Math.max(0, 95 + 15 - (screenHeight * 0.15));
+
+        if (pos === 'full') sidebar.style.transform = `translateY(${minY}px)`, sidebar.classList.add('open');
         else if (pos === 'mid') sidebar.style.transform = 'translateY(45vh)', sidebar.classList.add('open');
         else sidebar.style.transform = '', sidebar.classList.remove('open');
     } else {
+        // Reset custom position when toggling collapsed state to prevent "sinking"
+        sidebar.style.top = '';
+        sidebar.style.left = '';
+        sidebar.style.bottom = '';
         if (pos === 'low') sidebar.classList.add('collapsed');
         else sidebar.classList.remove('collapsed');
     }
