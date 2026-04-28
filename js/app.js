@@ -583,28 +583,37 @@ function getSpotStyle(spot) {
     if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#EF4123', icon: 'fa-fist-raised' };
 
     const styles = {
-        '歴史': { color: '#4f46e5', icon: 'fa-landmark' },      // Indigo
-        '自然': { color: '#059669', icon: 'fa-tree' },          // Emerald
-        'グルメ': { color: '#d97706', icon: 'fa-utensils' },      // Amber
-        '温泉': { color: '#0891b2', icon: 'fa-hot-tub' },       // Cyan
-        '体験': { color: '#db2777', icon: 'fa-hiking' },        // Pink
-        '進撃の巨人': { color: '#EF4123', icon: 'fa-fist-raised' }, // Disaster/Titan Red
-        '文化': { color: '#7c3aed', icon: 'fa-palette' },       // Violet
-        'ショッピング': { color: '#e11d48', icon: 'fa-shopping-bag' }, // Rose
-        '公園': { color: '#16a34a', icon: 'fa-tree' },          // Green
-        'キャンプ': { color: '#15803d', icon: 'fa-campground' },    // Green
-        'スポーツ': { color: '#c026d3', icon: 'fa-flag-checkered' }, // Fuchsia
-        '観光地': { color: '#2563eb', icon: 'fa-camera' },       // Blue
+        'history': { color: '#4f46e5', icon: 'fa-landmark' },      // Indigo
+        'nature': { color: '#059669', icon: 'fa-tree' },          // Emerald
+        'gourmet': { color: '#d97706', icon: 'fa-utensils' },      // Amber
+        'onsen': { color: '#0891b2', icon: 'fa-hot-tub' },       // Cyan
+        'experience': { color: '#db2777', icon: 'fa-hiking' },     // Pink
+        'shingeki': { color: '#EF4123', icon: 'fa-fist-raised' },  // Red
+        'culture': { color: '#7c3aed', icon: 'fa-palette' },       // Violet
+        'shopping': { color: '#e11d48', icon: 'fa-shopping-bag' }, // Rose
+        'park': { color: '#16a34a', icon: 'fa-tree' },            // Green
+        'camp': { color: '#15803d', icon: 'fa-campground' },       // Dark Green
+        'sports': { color: '#c026d3', icon: 'fa-flag-checkered' }, // Fuchsia
+        'sightseeing': { color: '#2563eb', icon: 'fa-camera' },    // Blue
         '指定緊急避難場所': { color: '#EF4123', icon: 'fa-running' },
         '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
 
-    // Find the Japanese category key that matches the current spot's category
+    // Find the internal key (history, nature, etc.) by comparing with translations
+    let originalCatKey = null;
     const jaKeys = Object.keys(i18n.ja);
-    const originalCat = jaKeys.find(key => i18n[currentLang][key] === spot.カテゴリ) || spot.カテゴリ;
+    for (const key of jaKeys) {
+        if (i18n[currentLang][key] === spot.カテゴリ) {
+            originalCatKey = key;
+            break;
+        }
+    }
+    
+    // Fallback for disaster categories which might be in Japanese in the data
+    const cat = originalCatKey || spot.カテゴリ;
 
-    return styles[originalCat] || { color: '#64748b', icon: 'fa-map-marker-alt' };
+    return styles[cat] || { color: '#64748b', icon: 'fa-map-marker-alt' };
 }
 
 function updateList() {
