@@ -151,7 +151,29 @@ async function requestLocation(isStartup = false) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     initMap(); 
-    try { await loadAllData(); } catch(e) { console.error("Data load failed", e); }
+    try { 
+        await loadAllData(); 
+        // Fallback: If disaster data is still empty for ja, try loading from spots.json
+        if (allData.ja.disaster.length === 0) {
+            console.log("Disaster data empty, attempting to load from spots.json fallback");
+            const res = await fetch('spots.json');
+            if (res.ok) {
+                const json = await res.json();
+                if (json.disaster) allData.ja.disaster = json.disaster;
+                if (allData.ja.tourism.length === 0 && json.tourism) allData.ja.tourism = json.tourism;
+            }
+        }
+    } catch(e) { 
+        console.error("Data load failed, attempting spots.json fallback", e);
+        try {
+            const res = await fetch('spots.json');
+            if (res.ok) {
+                const json = await res.json();
+                if (json.tourism) allData.ja.tourism = json.tourism;
+                if (json.disaster) allData.ja.disaster = json.disaster;
+            }
+        } catch(e2) { console.error("JSON fallback also failed", e2); }
+    }
     setupEventListeners(); 
     initBottomSheet(); 
     updateUI();
@@ -206,10 +228,20 @@ async function loadData(lang) {
         };
     };
 
-    const tourismSheet = workbook.Sheets['観光'] || workbook.Sheets['Tourism'];
+    const tourismSheet = workbook.Sheets['観光'] || workbook.Sheets['Tourism'] || workbook.Sheets['Sheet1'];
     if (tourismSheet) allData[lang].tourism = XLSX.utils.sheet_to_json(tourismSheet).map(mapRow).filter(s => s !== null);
     const disasterSheet = workbook.Sheets['防災'] || workbook.Sheets['Disaster'];
     if (disasterSheet) allData[lang].disaster = XLSX.utils.sheet_to_json(disasterSheet).map(mapRow).filter(s => s !== null);
+    
+    // If disaster data is still empty and we're in the main lang, check if Sheet1 was actually disaster data
+    // (This is a fallback for cases where files are split differently)
+    if (allData[lang].disaster.length === 0 && allData[lang].tourism.length > 0) {
+        const firstCat = allData[lang].tourism[0].カテゴリ;
+        if (firstCat && (firstCat.includes('避難') || firstCat.includes('Shelter'))) {
+            allData[lang].disaster = allData[lang].tourism;
+            allData[lang].tourism = [];
+        }
+    }
 }
 
 function setupEventListeners() {
@@ -251,8 +283,8 @@ function setupEventListeners() {
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
                 if (!sidebar) return;
-                const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-                const currentY = matrix.m42;
+                const matrix = new (window.DOMMatrix || window.WebKitCSSMatrix)(window.getComputedStyle(sidebar).transform);
+                const currentY = matrix.m42 || matrix.f;
                 const screenHeight = window.innerHeight;
                 const minY = Math.max(0, 95 + 15 - (screenHeight * 0.15));
                 if (currentY > screenHeight * 0.5) setBottomSheetPos('mid');
@@ -287,8 +319,8 @@ function initBottomSheet() {
         const rect = sidebar.getBoundingClientRect();
         startLeft = rect.left; startTop = rect.top;
         if (window.innerWidth < 768) {
-            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-            startTranslateY = matrix.m42;
+            const matrix = new (window.DOMMatrix || window.WebKitCSSMatrix)(window.getComputedStyle(sidebar).transform);
+            startTranslateY = matrix.m42 || matrix.f;
         }
         sidebar.classList.add('dragging');
         document.body.style.userSelect = 'none';
@@ -329,8 +361,8 @@ function initBottomSheet() {
         const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
         const dy = clientY - startY;
         if (window.innerWidth < 768) {
-            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-            const currentY = matrix.m42; const screenHeight = window.innerHeight;
+            const matrix = new (window.DOMMatrix || window.WebKitCSSMatrix)(window.getComputedStyle(sidebar).transform);
+            const currentY = matrix.m42 || matrix.f; const screenHeight = window.innerHeight;
             sidebar.style.transform = '';
             if (duration < 300 && Math.abs(dy) > 30) {
                 if (dy < 0) setBottomSheetPos(currentY > screenHeight * 0.4 ? 'mid' : 'full');
@@ -399,9 +431,9 @@ function updateUI() {
     const safeSetText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
     const safeSetPlaceholder = (id, text) => { const el = document.getElementById(id); if (el) el.placeholder = text; };
 
-    safeSetText('header_title', t('header_title'));
-    safeSetText('header_credit', t('credit'));
-    safeSetText('header_subtitle', t('subtitle'));
+    safeSetText('header-title', t('header_title'));
+    safeSetText('header-credit', t('credit'));
+    safeSetText('header-subtitle', t('subtitle'));
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
     });
@@ -616,8 +648,10 @@ function toggleSelect(spot) {
 }
 
 function calculateDistance(l1, o1, l2, o2) {
+    const lat1 = parseFloat(l1), lng1 = parseFloat(o1), lat2 = parseFloat(l2), lng2 = parseFloat(o2);
+    if (isNaN(lat1) || isNaN(lng1) || isNaN(lat2) || isNaN(lng2)) return 999;
     const r = Math.PI / 180;
-    const dy = (l1 - l2) * r, dx = (o1 - o2) * r, p = (l1 + l2) / 2 * r;
+    const dy = (lat1 - lat2) * r, dx = (lng1 - lng2) * r, p = (lat1 + lat2) / 2 * r;
     const w = Math.sqrt(1 - 0.00669438 * Math.sin(p) * Math.sin(p));
     return Math.sqrt(Math.pow(dy * 6335439 / (w * w * w), 2) + Math.pow(dx * 6378137 * Math.cos(p) / w, 2)) / 1000;
 }
