@@ -232,16 +232,6 @@ async function loadData(lang) {
     if (tourismSheet) allData[lang].tourism = XLSX.utils.sheet_to_json(tourismSheet).map(mapRow).filter(s => s !== null);
     const disasterSheet = workbook.Sheets['防災'] || workbook.Sheets['Disaster'];
     if (disasterSheet) allData[lang].disaster = XLSX.utils.sheet_to_json(disasterSheet).map(mapRow).filter(s => s !== null);
-    
-    // If disaster data is still empty and we're in the main lang, check if Sheet1 was actually disaster data
-    // (This is a fallback for cases where files are split differently)
-    if (allData[lang].disaster.length === 0 && allData[lang].tourism.length > 0) {
-        const firstCat = allData[lang].tourism[0].カテゴリ;
-        if (firstCat && (firstCat.includes('避難') || firstCat.includes('Shelter'))) {
-            allData[lang].disaster = allData[lang].tourism;
-            allData[lang].tourism = [];
-        }
-    }
 }
 
 function setupEventListeners() {
