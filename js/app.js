@@ -150,17 +150,26 @@ async function requestLocation(isStartup = false) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log("DOM Content Loaded, initializing map...");
     initMap(); 
     try { 
+        console.log("Attempting to load data from Excel...");
         await loadAllData(); 
+        
         // Fallback: If disaster data is still empty for ja, try loading from spots.json
-        if (allData.ja.disaster.length === 0) {
+        if (!allData.ja.disaster || allData.ja.disaster.length === 0) {
             console.log("Disaster data empty, attempting to load from spots.json fallback");
             const res = await fetch('spots.json');
             if (res.ok) {
                 const json = await res.json();
-                if (json.disaster) allData.ja.disaster = json.disaster;
-                if (allData.ja.tourism.length === 0 && json.tourism) allData.ja.tourism = json.tourism;
+                if (json.disaster) {
+                    allData.ja.disaster = json.disaster;
+                    console.log(`Loaded ${allData.ja.disaster.length} disaster spots from fallback JSON`);
+                }
+                if ((!allData.ja.tourism || allData.ja.tourism.length === 0) && json.tourism) {
+                    allData.ja.tourism = json.tourism;
+                    console.log(`Loaded ${allData.ja.tourism.length} tourism spots from fallback JSON`);
+                }
             }
         }
     } catch(e) { 
@@ -171,12 +180,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const json = await res.json();
                 if (json.tourism) allData.ja.tourism = json.tourism;
                 if (json.disaster) allData.ja.disaster = json.disaster;
+                console.log("Loaded all data from fallback JSON");
             }
         } catch(e2) { console.error("JSON fallback also failed", e2); }
     }
+    
+    console.log("Setting up event listeners...");
     setupEventListeners(); 
+    console.log("Initializing bottom sheet...");
     initBottomSheet(); 
+    console.log("Final UI Update...");
     updateUI();
+    switchTab('list');
+    console.log("Requesting initial location...");
     requestLocation(true);
 });
 
@@ -198,40 +214,52 @@ async function loadAllData() {
 }
 
 async function loadData(lang) {
+    console.log(`Loading data for: ${lang}`);
     const fileName = lang === 'ja' ? 'spots.xlsx' : `spots_${lang}.xlsx`;
-    const response = await fetch(fileName);
-    if (!response.ok) throw new Error(`Failed to load ${fileName}`);
-    const arrayBuffer = await response.arrayBuffer();
-    const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
-    
-    const mapRow = (row) => {
-        const get = (keys) => {
-            for (const key of keys) if (row[key] !== undefined && row[key] !== null) return row[key];
-            return undefined;
+    try {
+        const response = await fetch(fileName);
+        if (!response.ok) throw new Error(`Failed to load ${fileName}`);
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+        
+        const mapRow = (row) => {
+            const get = (keys) => {
+                for (const key of keys) if (row[key] !== undefined && row[key] !== null) return row[key];
+                return undefined;
+            };
+            const latVal = get(['緯度', 'Latitude', 'lat']);
+            const lngVal = get(['経度', 'Longitude', 'lng']);
+            const lat = parseFloat(latVal);
+            const lng = parseFloat(lngVal);
+            if (isNaN(lat) || isNaN(lng)) return null;
+            return {
+                No: parseInt(get(['No', 'id', 'ID'])) || 0,
+                スポット名: (get(['スポット名', 'Spot Name', 'name', 'spot_name']) || "").toString().trim(),
+                カテゴリ: (get(['カテゴリ', 'Category', 'category']) || "").toString().trim(),
+                緯度: lat, 経度: lng,
+                '所要時間（参考）': (get(['所要時間（参考）', 'Duration', 'time_ref']) || "").toString(),
+                説明: (get(['説明', 'Description', 'desc', 'description']) || "").toString().trim(),
+                待ち時間: parseInt(get(['待ち時間', 'wait', 'Wait Time'])) || 0,
+                所要時間: parseInt(get(['所要時間', 'duration', 'Duration'])) || 0,
+                '営業時間': (get(['営業時間', 'hours', 'Hours']) || "終日").toString(),
+                '料金': (get(['料金', 'fee', 'Fee']) || "無料").toString()
+            };
         };
-        const latVal = get(['緯度', 'Latitude', 'lat']);
-        const lngVal = get(['経度', 'Longitude', 'lng']);
-        const lat = parseFloat(latVal);
-        const lng = parseFloat(lngVal);
-        if (isNaN(lat) || isNaN(lng)) return null;
-        return {
-            No: parseInt(get(['No', 'id', 'ID'])) || 0,
-            スポット名: (get(['スポット名', 'Spot Name', 'name', 'spot_name']) || "").toString().trim(),
-            カテゴリ: (get(['カテゴリ', 'Category', 'category']) || "").toString().trim(),
-            緯度: lat, 経度: lng,
-            '所要時間（参考）': (get(['所要時間（参考）', 'Duration', 'time_ref']) || "").toString(),
-            説明: (get(['説明', 'Description', 'desc', 'description']) || "").toString().trim(),
-            待ち時間: parseInt(get(['待ち時間', 'wait', 'Wait Time'])) || 0,
-            所要時間: parseInt(get(['所要時間', 'duration', 'Duration'])) || 0,
-            '営業時間': (get(['営業時間', 'hours', 'Hours']) || "終日").toString(),
-            '料金': (get(['料金', 'fee', 'Fee']) || "無料").toString()
-        };
-    };
 
-    const tourismSheet = workbook.Sheets['観光'] || workbook.Sheets['Tourism'] || workbook.Sheets['Sheet1'];
-    if (tourismSheet) allData[lang].tourism = XLSX.utils.sheet_to_json(tourismSheet).map(mapRow).filter(s => s !== null);
-    const disasterSheet = workbook.Sheets['防災'] || workbook.Sheets['Disaster'];
-    if (disasterSheet) allData[lang].disaster = XLSX.utils.sheet_to_json(disasterSheet).map(mapRow).filter(s => s !== null);
+        const tourismSheet = workbook.Sheets['観光'] || workbook.Sheets['Tourism'] || workbook.Sheets['Sheet1'];
+        if (tourismSheet) {
+            allData[lang].tourism = XLSX.utils.sheet_to_json(tourismSheet).map(mapRow).filter(s => s !== null);
+            console.log(`Loaded ${allData[lang].tourism.length} tourism spots for ${lang}`);
+        }
+        const disasterSheet = workbook.Sheets['防災'] || workbook.Sheets['Disaster'];
+        if (disasterSheet) {
+            allData[lang].disaster = XLSX.utils.sheet_to_json(disasterSheet).map(mapRow).filter(s => s !== null);
+            console.log(`Loaded ${allData[lang].disaster.length} disaster spots for ${lang}`);
+        }
+    } catch (e) {
+        console.error(`Error loading ${fileName}:`, e);
+        throw e;
+    }
 }
 
 function setupEventListeners() {
@@ -397,6 +425,7 @@ function resetAll() {
 }
 
 function switchTab(tabName) {
+    console.log(`Switching to tab: ${tabName}`);
     ['list', 'info', 'extra'].forEach(t => {
         const active = (t === tabName);
         const btn = document.getElementById(`tab-btn-${t}`);
@@ -405,15 +434,23 @@ function switchTab(tabName) {
             const activeColor = currentMode === 'tourism' ? 'text-brand-500' : 'text-disaster-600';
             const activeBorder = currentMode === 'tourism' ? 'border-brand-500' : 'border-disaster-600';
             btn.classList.toggle(activeColor, active); btn.classList.toggle(activeBorder, active);
+            
             const inactiveColor = currentMode === 'tourism' ? 'text-disaster-600' : 'text-brand-500';
             const inactiveBorder = currentMode === 'tourism' ? 'border-disaster-600' : 'border-brand-500';
             btn.classList.remove(inactiveColor, inactiveBorder);
+            
             btn.classList.toggle('text-slate-400', !active); btn.classList.toggle('border-transparent', !active);
         }
         if (pane) pane.classList.toggle('hidden', !active);
     });
+    
     const searchSection = document.getElementById('search-section');
     if (searchSection) searchSection.classList.toggle('hidden', tabName !== 'list');
+    
+    if (tabName === 'extra') {
+        if (currentMode === 'tourism') renderEvents();
+        else renderDisasterInfo();
+    }
 }
 
 function updateUI() {
@@ -484,8 +521,6 @@ function updateUI() {
             chips.appendChild(b);
         });
     }
-    const activeTabEl = document.querySelector('[data-tab].text-brand-500, [data-tab].text-disaster-600');
-    switchTab(activeTabEl ? activeTabEl.getAttribute('data-tab') : 'list');
     updateList();
 }
 
@@ -571,13 +606,20 @@ function updateList() {
     const searchInput = document.getElementById('search-input');
     const search = searchInput ? searchInput.value.toLowerCase() : "";
     const list = document.getElementById('spot-list');
-    if (!list || !map) return;
+    if (!list || !map) {
+        console.warn("UpdateList cancelled: list or map missing", {list:!!list, map:!!map});
+        return;
+    }
     list.innerHTML = ''; markers.forEach(m => map.removeLayer(m)); markers = [];
+    
     const data = allData[currentLang][currentMode] || [];
+    console.log(`Updating list for mode: ${currentMode}, lang: ${currentLang}, items: ${data.length}`);
+    
     const items = data.map(s => ({
         ...s, dist: calculateDistance(userLocation[0], userLocation[1], s.緯度, s.経度),
         sel: selectedSpots.some(x => x.No === s.No)
     }));
+    
     const filtered = items.filter(s => {
         const mSearch = (s.スポット名 && s.スポット名.toLowerCase().includes(search)) || (s.説明 && s.説明.toLowerCase().includes(search)) || (s.カテゴリ && s.カテゴリ.toLowerCase().includes(search));
         const mCat = currentCategory === 'all' || s.カテゴリ === currentCategory;
@@ -591,6 +633,8 @@ function updateList() {
         if (currentSort === 'name') return (a.スポット名||"").localeCompare(b.スポット名||"", 'ja');
         return 0;
     });
+
+    console.log(`Filtered items: ${filtered.length}`);
 
     filtered.forEach(spot => {
         const st = getSpotStyle(spot);
@@ -695,29 +739,50 @@ function isOpen(hours) {
 async function callGemini() {
     const key = document.getElementById('gemini-key')?.value;
     if (!key) return alert("API Key required");
+    const aiResponse = document.getElementById('ai-response');
+    const aiBtn = document.getElementById('ai-btn');
+    if (aiResponse) {
+        aiResponse.innerText = t('thinking');
+        aiResponse.classList.remove('hidden');
+    }
+    if (aiBtn) aiBtn.disabled = true;
+
     try {
         const interests = Array.from(document.querySelectorAll('.interest-chip.bg-brand-500, .interest-chip.bg-disaster-600')).map(b => b.innerText);
         const prompt = `日田市の観光プランを提案してください。\n言語: ${currentLang}\n興味: ${interests.join(', ')}\n要望: ${document.getElementById('ai-request')?.value}\n選択中: ${selectedSpots.map(s=>s.スポット名).join(', ')}`;
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${key}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const json = await res.json();
-        alert(json.candidates[0].content.parts[0].text);
-    } catch(e) { alert(t('error') + e.message); }
+        const text = json.candidates[0].content.parts[0].text;
+        if (aiResponse) {
+            aiResponse.innerText = text;
+        } else {
+            alert(text);
+        }
+    } catch(e) { 
+        console.error("Gemini Error:", e);
+        if (aiResponse) aiResponse.innerText = t('error') + e.message;
+        else alert(t('error') + e.message); 
+    } finally {
+        if (aiBtn) aiBtn.disabled = false;
+    }
 }
 
 function renderEvents() {
+    const list = document.getElementById('extra-content-list');
     const pane = document.getElementById('pane-extra');
-    if (!pane) return;
-    pane.innerHTML = `<h3 class="text-brand-500 font-black text-sm mb-4 uppercase tracking-wider">${t('event').toUpperCase()}</h3>` + 
+    if (!list || !pane) return;
+    list.innerHTML = `<h3 class="text-brand-500 font-black text-sm mb-4 uppercase tracking-wider">${t('event').toUpperCase()}</h3>` + 
         [1,2,3,4].map(i => `<div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4"><h4 class="font-black text-slate-800 text-sm mb-1">${t('event_'+i)}</h4><p class="text-[10px] text-slate-500 leading-relaxed font-medium">${t('event_desc_'+i)}</p></div>`).join('');
 }
 
 function renderDisasterInfo() {
+    const list = document.getElementById('extra-content-list');
     const pane = document.getElementById('pane-extra');
-    if (!pane) return;
+    if (!list || !pane) return;
     const links = { h_map: "https://www.city.hita.oita.jp/site/bousai/2380.html", d_portal: "https://www.city.hita.oita.jp/site/bousai/", oita_bousai: "https://www.pref.oita.jp/site/bosainotishiki/", emergency_contact: "https://www.city.hita.oita.jp/soshiki/25/1824.html" };
-    pane.innerHTML = `<h3 class="text-disaster-600 font-black text-sm mb-4 uppercase tracking-wider">${t('info').toUpperCase()}</h3>` + 
+    list.innerHTML = `<h3 class="text-disaster-600 font-black text-sm mb-4 uppercase tracking-wider">${t('info').toUpperCase()}</h3>` + 
         ['h_map', 'd_portal', 'oita_bousai', 'emergency_contact'].map(k => `<div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4 cursor-pointer" onclick="window.open('${links[k]}', '_blank')"><h4 class="font-black text-slate-800 text-sm mb-1">${t(k)}</h4><p class="text-[10px] text-slate-500 font-medium">${t(k+'_desc')}</p></div>`).join('');
 }
