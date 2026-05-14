@@ -372,9 +372,18 @@ function initBottomSheet() {
             if (newY < 0) newY *= 0.2;
             sidebar.style.transform = `translateY(${newY}px)`;
         } else {
-            sidebar.style.left = `${startLeft + dx}px`;
-            sidebar.style.top = `${startTop + dy}px`;
-            sidebar.style.bottom = 'auto'; 
+            // Clamp so the handle is always grabbable on-screen
+            const w = sidebar.offsetWidth || 380;
+            const handleH = 80;
+            const minVisible = 100;
+            const headerH = 95;
+            let newLeft = startLeft + dx;
+            let newTop = startTop + dy;
+            newLeft = Math.max(minVisible - w, Math.min(window.innerWidth - minVisible, newLeft));
+            newTop = Math.max(headerH, Math.min(window.innerHeight - handleH, newTop));
+            sidebar.style.left = `${newLeft}px`;
+            sidebar.style.top = `${newTop}px`;
+            sidebar.style.bottom = 'auto';
         }
     };
 
@@ -413,6 +422,48 @@ function initBottomSheet() {
     handle.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
+
+    // Double-click / double-tap handle to reset position when stranded
+    let lastTap = 0;
+    const resetPosition = () => {
+        sidebar.style.transform = '';
+        sidebar.style.left = '';
+        sidebar.style.top = '';
+        sidebar.style.bottom = '';
+        sidebar.classList.remove('open', 'collapsed', 'dragging');
+    };
+    handle.addEventListener('dblclick', resetPosition);
+    handle.addEventListener('touchend', () => {
+        const now = Date.now();
+        if (now - lastTap < 350) resetPosition();
+        lastTap = now;
+    });
+
+    let prevIsMobile = window.innerWidth < 768;
+    window.addEventListener('resize', () => {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile !== prevIsMobile) {
+            // Crossed the mobile/desktop breakpoint — clear stale inline styles
+            resetPosition();
+            prevIsMobile = isMobile;
+            return;
+        }
+        if (!isMobile && (sidebar.style.left || sidebar.style.top)) {
+            // Re-clamp desktop drag position into the new viewport
+            const w = sidebar.offsetWidth || 380;
+            const handleH = 80;
+            const minVisible = 100;
+            const headerH = 95;
+            const curLeft = parseFloat(sidebar.style.left);
+            const curTop = parseFloat(sidebar.style.top);
+            if (!isNaN(curLeft)) {
+                sidebar.style.left = `${Math.max(minVisible - w, Math.min(window.innerWidth - minVisible, curLeft))}px`;
+            }
+            if (!isNaN(curTop)) {
+                sidebar.style.top = `${Math.max(headerH, Math.min(window.innerHeight - handleH, curTop))}px`;
+            }
+        }
+    });
 }
 
 function setBottomSheetPos(pos) {
@@ -580,18 +631,18 @@ function setupDisasterAIUI() {
 }
 
 function getSpotStyle(spot) {
-    if (spot.sel) return { color: '#EF4123', icon: 'fa-star' };
-    if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#EF4123', icon: 'fa-fist-raised' };
+    if (spot.sel) return { color: '#a63e3e', icon: 'fa-star' };
+    if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#a63e3e', icon: 'fa-fist-raised' };
 
     const styles = {
         '歴史': { color: '#1b4353', icon: 'fa-landmark' }, '自然': { color: '#10b981', icon: 'fa-tree' },
         'グルメ': { color: '#f59e0b', icon: 'fa-utensils' }, '温泉': { color: '#06b6d4', icon: 'fa-hot-tub' },
-        '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#EF4123', icon: 'fa-fist-raised' },
+        '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#a63e3e', icon: 'fa-fist-raised' },
         '文化': { color: '#8b5cf6', icon: 'fa-palette' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
         '公園': { color: '#16a34a', icon: 'fa-tree' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
         'スポーツ': { color: '#d946ef', icon: 'fa-flag-checkered' },
         '観光地': { color: '#0ea5e9', icon: 'fa-camera-retro' },
-        '指定緊急避難場所': { color: '#EF4123', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
+        '指定緊急避難場所': { color: '#a63e3e', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
 
@@ -738,7 +789,7 @@ function optimizeRoute() {
     const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation[0]},${userLocation[1]}&destination=${route[route.length-1].緯度},${route[route.length-1].経度}&waypoints=${route.slice(0,-1).map(s=>`${s.緯度},${s.経度}`).join('|')}&travelmode=${currentMode==='tourism'?'driving':'walking'}`;
     document.getElementById('gmaps-link-btn').onclick = () => window.open(url, '_blank');
     if (window.polyline) map.removeLayer(window.polyline);
-    window.polyline = L.polyline([userLocation, ...route.map(s=>[s.緯度,s.経度])], {color: currentMode==='tourism'?'#1b4353':'#EF4123', weight: 5, opacity: 0.5, dashArray: '10, 10'}).addTo(map);
+    window.polyline = L.polyline([userLocation, ...route.map(s=>[s.緯度,s.経度])], {color: currentMode==='tourism'?'#1b4353':'#a63e3e', weight: 5, opacity: 0.5, dashArray: '10, 10'}).addTo(map);
     map.fitBounds(window.polyline.getBounds(), { padding: [60, 60] });
     switchTab('info');
 }
