@@ -216,34 +216,74 @@ function renderApiHelp() {
     if (bodyEl) bodyEl.innerHTML = c.html;
 }
 
+let _gpsInFlight = false;
+
+function _getPositionOnce(opts) {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) return reject(new Error('NO_GEOLOCATION'));
+        navigator.geolocation.getCurrentPosition(resolve, reject, opts);
+    });
+}
+
+function _gpsErrorMessage(err) {
+    const base = t('gps_error');
+    if (!err) return base;
+    if (err.code === 1) return base + ' (PERMISSION_DENIED)';
+    if (err.code === 2) return base + ' (POSITION_UNAVAILABLE)';
+    if (err.code === 3) return base + ' (TIMEOUT)';
+    return base;
+}
+
 async function requestLocation(isStartup = false) {
     if (!navigator.geolocation) {
         if (!isStartup) alert(t('gps_error'));
         return;
     }
+    if (_gpsInFlight) return;
+    _gpsInFlight = true;
 
-    const options = {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+    const btn = document.getElementById('gps-btn');
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-sm"></i>';
+    }
+
+    const apply = (p) => {
+        userLocation = [p.coords.latitude, p.coords.longitude];
+        if (map) {
+            map.flyTo(userLocation, 15);
+            if (userMarker) userMarker.setLatLng(userLocation);
+        }
+        updateList();
     };
 
-    navigator.geolocation.getCurrentPosition(
-        (p) => {
-            userLocation = [p.coords.latitude, p.coords.longitude];
-            if (map) {
-                map.flyTo(userLocation, 15);
-                if (userMarker) userMarker.setLatLng(userLocation);
+    try {
+        // Try high accuracy first with a short ceiling so we fail fast.
+        const pos = await _getPositionOnce({ enableHighAccuracy: true, timeout: 6000, maximumAge: 30000 });
+        apply(pos);
+    } catch (errHigh) {
+        console.warn('High-accuracy GPS failed:', errHigh);
+        // If the user denied permission, retrying won't help.
+        if (errHigh && errHigh.code === 1) {
+            if (!isStartup) alert(_gpsErrorMessage(errHigh));
+        } else {
+            // Fall back to low accuracy with a longer window.
+            try {
+                const pos = await _getPositionOnce({ enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 });
+                apply(pos);
+            } catch (errLow) {
+                console.error('Low-accuracy GPS failed:', errLow);
+                if (!isStartup) alert(_gpsErrorMessage(errLow));
             }
-            updateList();
-        },
-        (err) => {
-            console.error("Geolocation error:", err);
-            // On startup, we don't necessarily want to alert unless it's a critical failure
-            if (!isStartup) alert(t('gps_error'));
-        },
-        options
-    );
+        }
+    } finally {
+        _gpsInFlight = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml || '<i class="fas fa-location-arrow text-sm"></i>';
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -392,24 +432,68 @@ function setupEventListeners() {
 
     // Handle click to cycle states (for better affordance)
     const handle = document.getElementById('drawer-handle');
-    let lastY = 0;
     handle.onclick = (e) => {
-        if (e.target.closest('input, label')) return;
+        if (e.target.closest('input, label, select, button')) return;
+        const sidebar = document.getElementById('sidebar');
         if (window.innerWidth < 768) {
-            const sidebar = document.getElementById('sidebar');
-            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-            const currentY = matrix.m42;
+            const currentY = parseTranslateY(sidebar);
             const screenHeight = window.innerHeight;
-            
             // Cycle: low -> mid -> full -> low
             if (currentY > screenHeight * 0.5) setBottomSheetPos('mid');
             else if (currentY > screenHeight * 0.1) setBottomSheetPos('full');
             else setBottomSheetPos('low');
         } else {
-            const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
         }
     };
+}
+
+// Minimum px the user must always see so they can grab the handle / drag back
+const SIDEBAR_PEEK = 90;
+const SIDEBAR_HEADER = 95;
+
+function parseTranslateY(el) {
+    const tr = window.getComputedStyle(el).transform;
+    if (!tr || tr === 'none') return 0;
+    // matrix(a, b, c, d, tx, ty) or matrix3d(...)
+    const m = tr.match(/^matrix\(([^)]+)\)$/) || tr.match(/^matrix3d\(([^)]+)\)$/);
+    if (!m) return 0;
+    const parts = m[1].split(',').map(s => parseFloat(s.trim()));
+    return parts.length === 6 ? parts[5] : parts[13];
+}
+
+function clampSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    if (window.innerWidth < 768) {
+        // On mobile, ensure transform doesn't push sidebar fully off-screen.
+        const ty = parseTranslateY(sidebar);
+        const maxTy = window.innerHeight - SIDEBAR_PEEK;
+        if (ty > maxTy) {
+            // Re-snap to the low position with pixel-precise translate
+            setBottomSheetPos('low');
+        }
+    } else if (sidebar.style.left || sidebar.style.top) {
+        const w = sidebar.offsetWidth || 380;
+        const curLeft = parseFloat(sidebar.style.left);
+        const curTop = parseFloat(sidebar.style.top);
+        if (!isNaN(curLeft)) {
+            sidebar.style.left = `${Math.max(SIDEBAR_PEEK - w, Math.min(window.innerWidth - SIDEBAR_PEEK, curLeft))}px`;
+        }
+        if (!isNaN(curTop)) {
+            sidebar.style.top = `${Math.max(SIDEBAR_HEADER, Math.min(window.innerHeight - SIDEBAR_PEEK, curTop))}px`;
+        }
+    }
+}
+
+function resetSidebarPosition() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    sidebar.style.transform = '';
+    sidebar.style.left = '';
+    sidebar.style.top = '';
+    sidebar.style.bottom = '';
+    sidebar.classList.remove('open', 'collapsed', 'dragging');
 }
 
 function initBottomSheet() {
@@ -422,23 +506,22 @@ function initBottomSheet() {
     let startTime;
 
     const onStart = (e) => {
-        if (e.target.closest('input, label')) return;
+        if (e.target.closest('input, label, select, button')) return;
         isDragging = true;
         startTime = Date.now();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         startX = clientX;
         startY = clientY;
-        
+
         const rect = sidebar.getBoundingClientRect();
         startLeft = rect.left;
         startTop = rect.top;
 
         if (window.innerWidth < 768) {
-            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-            startTranslateY = matrix.m42;
+            startTranslateY = parseTranslateY(sidebar);
         }
-        
+
         sidebar.classList.add('dragging');
         document.body.style.userSelect = 'none';
     };
@@ -452,18 +535,20 @@ function initBottomSheet() {
 
         if (window.innerWidth < 768) {
             let newY = startTranslateY + dy;
+            // Soft top boundary (rubber-band when pulled above full-open)
             if (newY < 0) newY *= 0.2;
+            // Hard bottom boundary so the handle can't be dragged below the viewport
+            const maxY = window.innerHeight - SIDEBAR_PEEK;
+            if (newY > maxY) newY = maxY + (newY - maxY) * 0.2;
             sidebar.style.transform = `translateY(${newY}px)`;
+            // Prevent page scrolling competing with drag on iOS
+            if (e.cancelable) e.preventDefault();
         } else {
-            // Clamp so the handle is always grabbable on-screen
             const w = sidebar.offsetWidth || 380;
-            const handleH = 80;
-            const minVisible = 100;
-            const headerH = 95;
             let newLeft = startLeft + dx;
             let newTop = startTop + dy;
-            newLeft = Math.max(minVisible - w, Math.min(window.innerWidth - minVisible, newLeft));
-            newTop = Math.max(headerH, Math.min(window.innerHeight - handleH, newTop));
+            newLeft = Math.max(SIDEBAR_PEEK - w, Math.min(window.innerWidth - SIDEBAR_PEEK, newLeft));
+            newTop = Math.max(SIDEBAR_HEADER, Math.min(window.innerHeight - SIDEBAR_PEEK, newTop));
             sidebar.style.left = `${newLeft}px`;
             sidebar.style.top = `${newTop}px`;
             sidebar.style.bottom = 'auto';
@@ -477,16 +562,14 @@ function initBottomSheet() {
         document.body.style.userSelect = '';
 
         const duration = Date.now() - startTime;
-        const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        const clientY = e && e.changedTouches ? e.changedTouches[0].clientY : (e ? e.clientY : startY);
         const dy = clientY - startY;
 
         if (window.innerWidth < 768) {
-            const matrix = new WebKitCSSMatrix(window.getComputedStyle(sidebar).transform);
-            const currentY = matrix.m42;
+            const currentY = parseTranslateY(sidebar);
             const screenHeight = window.innerHeight;
             sidebar.style.transform = '';
-            
-            // Fast swipe detection
+
             if (duration < 300 && Math.abs(dy) > 30) {
                 if (dy < 0) setBottomSheetPos(currentY > screenHeight * 0.4 ? 'mid' : 'full');
                 else setBottomSheetPos(currentY < screenHeight * 0.4 ? 'mid' : 'low');
@@ -496,65 +579,85 @@ function initBottomSheet() {
                 else setBottomSheetPos('low');
             }
         }
+        // Final safety check
+        clampSidebar();
     };
 
-    handle.addEventListener('touchstart', onStart, {passive: true});
-    window.addEventListener('touchmove', onMove, {passive: false});
+    const onCancel = () => {
+        // System interrupted the touch (call, multitouch, alert) — recover cleanly.
+        if (!isDragging) return;
+        isDragging = false;
+        sidebar.classList.remove('dragging');
+        document.body.style.userSelect = '';
+        if (window.innerWidth < 768) {
+            sidebar.style.transform = '';
+            setBottomSheetPos('low');
+        }
+        clampSidebar();
+    };
+
+    handle.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: false });
     window.addEventListener('touchend', onEnd);
+    window.addEventListener('touchcancel', onCancel);
 
     handle.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
+    window.addEventListener('blur', onCancel);
 
-    // Double-click / double-tap handle to reset position when stranded
+    // Double-click / double-tap handle to force reset
     let lastTap = 0;
-    const resetPosition = () => {
-        sidebar.style.transform = '';
-        sidebar.style.left = '';
-        sidebar.style.top = '';
-        sidebar.style.bottom = '';
-        sidebar.classList.remove('open', 'collapsed', 'dragging');
-    };
-    handle.addEventListener('dblclick', resetPosition);
+    handle.addEventListener('dblclick', resetSidebarPosition);
     handle.addEventListener('touchend', () => {
         const now = Date.now();
-        if (now - lastTap < 350) resetPosition();
+        if (now - lastTap < 350) resetSidebarPosition();
         lastTap = now;
     });
 
     let prevIsMobile = window.innerWidth < 768;
-    window.addEventListener('resize', () => {
+    const onViewportChange = () => {
         const isMobile = window.innerWidth < 768;
         if (isMobile !== prevIsMobile) {
-            // Crossed the mobile/desktop breakpoint — clear stale inline styles
-            resetPosition();
+            resetSidebarPosition();
             prevIsMobile = isMobile;
-            return;
+        } else {
+            clampSidebar();
         }
-        if (!isMobile && (sidebar.style.left || sidebar.style.top)) {
-            // Re-clamp desktop drag position into the new viewport
-            const w = sidebar.offsetWidth || 380;
-            const handleH = 80;
-            const minVisible = 100;
-            const headerH = 95;
-            const curLeft = parseFloat(sidebar.style.left);
-            const curTop = parseFloat(sidebar.style.top);
-            if (!isNaN(curLeft)) {
-                sidebar.style.left = `${Math.max(minVisible - w, Math.min(window.innerWidth - minVisible, curLeft))}px`;
-            }
-            if (!isNaN(curTop)) {
-                sidebar.style.top = `${Math.max(headerH, Math.min(window.innerHeight - handleH, curTop))}px`;
-            }
-        }
+    };
+    window.addEventListener('resize', onViewportChange);
+    window.addEventListener('orientationchange', () => {
+        // On orientation change, viewport reflow takes a moment — re-check after the fact.
+        resetSidebarPosition();
+        setTimeout(clampSidebar, 350);
+    });
+
+    // If the page becomes visible again (returning from another app), make sure the sidebar didn't get stranded.
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) clampSidebar();
     });
 }
 
 function setBottomSheetPos(pos) {
     const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
     if (window.innerWidth < 768) {
-        if (pos === 'full') sidebar.style.transform = 'translateY(0)', sidebar.classList.add('open');
-        else if (pos === 'mid') sidebar.style.transform = 'translateY(45vh)', sidebar.classList.add('open');
-        else sidebar.style.transform = '', sidebar.classList.remove('open');
+        // Pixel-based positions are more reliable than vh units on iOS where the address bar shrinks the visible area.
+        const h = window.innerHeight;
+        if (pos === 'full') {
+            sidebar.style.transform = 'translateY(0)';
+            sidebar.classList.add('open');
+        } else if (pos === 'mid') {
+            sidebar.style.transform = `translateY(${Math.round(h * 0.45)}px)`;
+            sidebar.classList.add('open');
+        } else {
+            // 'low' — leave the handle (~80px) peeking above viewport bottom
+            const peek = SIDEBAR_PEEK;
+            // Sidebar height in CSS is 85vh, so translate by (sidebar_top + sidebar_height - peek) - sidebar_top = sidebar_height - peek
+            const sidebarH = Math.round(h * 0.85);
+            sidebar.style.transform = `translateY(${sidebarH - peek}px)`;
+            sidebar.classList.remove('open');
+        }
     } else {
         if (pos === 'low') sidebar.classList.add('collapsed');
         else sidebar.classList.remove('collapsed');
