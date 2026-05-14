@@ -28,7 +28,8 @@ const i18n = {
         ai_btn_tour: "AIにおまかせプラン作成", ai_btn_dis: "必要な備えを聞く", ai_req: "その他の要望", ai_req_tour: "例: 子供連れ、映える場所など",
         go_here: "ここへ行く", go_dis: "ここへ避難する", remove: "消す", add_modal_tour: "ここへ行く場所に追加", add_modal_dis: "ここを避難先に選ぶ",
         credit: "created by 大分県立日田高校 79回生 SS情報班", subtitle: "日田市総合案内コンシェルジュ",
-        history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", park: "公園", camp: "キャンプ", sports: "スポーツ", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
+        history: "歴史", nature: "自然", gourmet: "グルメ", onsen: "温泉", experience: "体験", shingeki: "進撃の巨人", culture: "文化", shopping: "ショッピング", park: "公園", camp: "キャンプ", sports: "スポーツ", sightseeing: "観光地", food: "食料", hygiene: "衛生", blackout: "停電", medicine: "常備薬", clothing: "衣類", baby: "ベビー用品", pet: "ペット用品",
+        "観光地": "観光地", "歴史": "歴史", "自然": "自然", "グルメ": "グルメ", "温泉": "温泉", "体験": "体験", "進撃の巨人": "進撃の巨人", "文化": "文化", "ショッピング": "ショッピング", "公園": "公園", "キャンプ": "キャンプ", "スポーツ": "スポーツ",
         h_map: "ハザードマップ", d_portal: "防災ポータル", oita_bousai: "おおいた防災知識の広場", emergency_contact: "救急安心センター",
         h_map_desc: "浸水想定区域や土砂災害警戒区域を確認できます。",
         d_portal_desc: "日田市の最新の防災情報をまとめて確認できます。",
@@ -45,10 +46,18 @@ const i18n = {
     },
     en: {
         find: "Find Spots", shelter: "Find Shelters", route_ai: "Route / AI", route: "Route", consult: "Consult", info: "Info", event: "Events",
-        // ... (rest of en i18n)
-        "歴史": "History", "自然": "Nature", "グルメ": "Gourmet", "温泉": "Onsen", "体験": "Craft", "進撃の巨人": "Attack on Titan", "文化": "Culture", "ショッピング": "Shopping", "公園": "Park", "キャンプ": "Camp", "スポーツ": "Sports",
+        search_tour: "Search spots or keywords...", search_dis: "Search shelters or places...", decide_tour: "Build Route",
+        sel_tour: "selected", sel_dis: "selected", add_tour: "Add Spot", add_dis: "Add Shelter", reset: "Reset", reset_all: "Reset Selection",
+        sort_dist: "Nearest First", sort_cat: "By Category", sort_name: "By Name",
+        filter_1km: "Within 1km", filter_open: "Open Now",
+        gmaps_tour: "Start in Google Maps", gmaps_dis: "Navigate to Shelter", ai_tour_title: "AI Tourism Guide", ai_dis_title: "AI Disaster Prep",
+        ai_in1_tour: "Stay duration", ai_in1_dis: "Family (e.g. 2 adults)", ai_in2_tour: "Budget", ai_in2_dis: "Stockpile budget",
+        ai_btn_tour: "Generate AI Plan", ai_btn_dis: "Ask AI for Essentials", ai_req: "Other requests", ai_req_tour: "e.g. kids friendly, photo spots",
+        go_here: "Go Here", go_dis: "Evacuate Here", remove: "Remove", add_modal_tour: "Add to itinerary", add_modal_dis: "Set as shelter",
+        credit: "created by Oita Prefectural Hita High School 79th SS Info Club", subtitle: "Hita City Concierge",
+        "歴史": "History", "自然": "Nature", "グルメ": "Gourmet", "温泉": "Onsen", "体験": "Craft", "進撃の巨人": "Attack on Titan", "文化": "Culture", "ショッピング": "Shopping", "公園": "Park", "キャンプ": "Camp", "スポーツ": "Sports", "観光地": "Sightseeing",
         "指定緊急避難場所": "Emergency Shelter", "指定避難所": "Designated Shelter", "福祉避難所": "Welfare Shelter",
-        history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", park: "Park", camp: "Camp", sports: "Sports", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
+        history: "History", nature: "Nature", gourmet: "Gourmet", onsen: "Onsen", experience: "Craft", shingeki: "Attack on Titan", culture: "Culture", shopping: "Shopping", park: "Park", camp: "Camp", sports: "Sports", sightseeing: "Sightseeing", food: "Food", hygiene: "Hygiene", blackout: "Blackout", medicine: "Medicine", clothing: "Clothing", baby: "Baby Care", pet: "Pet Supplies",
         h_map: "Hazard Map", d_portal: "Disaster Portal", oita_bousai: "Oita Disaster Info", emergency_contact: "Emergency Relief Center",
         h_map_desc: "Check flood and landslide risk areas.",
         d_portal_desc: "Unified source for Hita City's latest disaster info.",
@@ -74,9 +83,9 @@ const i18n = {
         ai_btn_tour: "生成 AI 方案", ai_btn_dis: "咨询防灾用品", ai_req: "其他要求", ai_req_tour: "例如: 亲子游, 适合拍照",
         go_here: "去这里", go_dis: "去避难", remove: "删除", add_modal_tour: "加入行程", add_modal_dis: "选择为避难所",
         credit: "由 大分县立日田高中 第79届 SS信息组 创建", subtitle: "日田市智能导览地图",
-        "歴史": "历史", "自然": "自然", "グルメ": "美食", "温泉": "温泉", "体験": "体验", "進撃の巨人": "进击的巨人", "文化": "文化", "ショッピング": "购物", "公園": "公园", "キャンプ": "露营", "スポーツ": "运动",
+        "歴史": "历史", "自然": "自然", "グルメ": "美食", "温泉": "温泉", "体験": "体验", "進撃の巨人": "进击的巨人", "文化": "文化", "ショッピング": "购物", "公園": "公园", "キャンプ": "露营", "スポーツ": "运动", "観光地": "观光地",
         "指定緊急避難場所": "紧急避难场所", "指定避難所": "指定避难所", "福祉避難所": "福祉避难所",
-        history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进撃の巨人", culture: "文化", shopping: "购物", park: "公园", camp: "露营", sports: "运动", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
+        history: "历史", nature: "自然", gourmet: "美食", onsen: "温泉", experience: "体验", shingeki: "进击的巨人", culture: "文化", shopping: "购物", park: "公园", camp: "露营", sports: "运动", sightseeing: "观光地", food: "食物", hygiene: "卫生", blackout: "停电", medicine: "常备药", clothing: "衣物", baby: "婴儿用品", pet: "宠物用品",
         h_map: "灾害地图", d_portal: "防灾门户", oita_bousai: "大分县防灾知识广场", emergency_contact: "急救安心中心",
         h_map_desc: "可以确认淹没预想区域和土石流灾害警戒区域。",
         d_portal_desc: "可以集中确认日田市最新的防灾信息。",
@@ -102,9 +111,9 @@ const i18n = {
         ai_btn_tour: "AI 추천 플랜 작성", ai_btn_dis: "필요한 대비 묻기", ai_req: "기타 요청", ai_req_tour: "예: 아이 동반, 사진 찍기 좋은 곳 등",
         go_here: "여기로 가기", go_dis: "여기로 대피하기", remove: "삭제", add_modal_tour: "일정에 추가", add_modal_dis: "대피처로 선택",
         credit: "오이타현립 히타고등학교 79회생 SS정보반 제작", subtitle: "히타시 종합 안내 컨시어지",
-        "歴史": "역사", "自然": "자연", "グルメ": "맛집", "温泉": "온천", "体験": "체험", "進撃의巨人": "진격의 거인", "文化": "문화", "ショッピング": "쇼핑", "公園": "공원", "キャンプ": "캠핑", "スポーツ": "스포츠",
+        "歴史": "역사", "自然": "자연", "グルメ": "맛집", "温泉": "온천", "体験": "체험", "進撃の巨人": "진격의 거인", "文化": "문화", "ショッピング": "쇼핑", "公園": "공원", "キャンプ": "캠핑", "スポーツ": "스포츠", "観光地": "관광지",
         "指定緊急避難場所": "지정긴급대피장소", "指定避難所": "지정대피소", "福祉避難所": "복지대피소",
-        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", park: "공원", camp: "캠핑", sports: "스포츠", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
+        history: "역사", nature: "자연", gourmet: "맛집", onsen: "온천", experience: "체험", shingeki: "진격의 거인", culture: "문화", shopping: "쇼핑", park: "공원", camp: "캠핑", sports: "스포츠", sightseeing: "관광지", food: "식량", hygiene: "위생", blackout: "정전", medicine: "상비약", clothing: "의류", baby: "베이비 용품", pet: "반려동물 용품",
 
         h_map: "해저드 맵", d_portal: "방재 포털", oita_bousai: "오이타 방재 지식의 광장", emergency_contact: "응급 안심 센터",
         h_map_desc: "침수 예상 구역 및 토사 재해 경계 구역을 확인할 수 있습니다.",
@@ -175,63 +184,89 @@ function initMap() {
 
 async function loadAllData() {
     const langs = ['ja', 'en', 'ko', 'zh'];
+    const failedLangs = [];
     for (const lang of langs) {
-        await loadData(lang);
+        const ok = await loadData(lang);
+        if (!ok) failedLangs.push(lang);
+    }
+    if (failedLangs.length > 0) {
+        console.warn(`Excel load failed for: ${failedLangs.join(', ')}. Falling back to spots.json`);
+        await loadJsonFallback(failedLangs);
     }
     console.log("All data loaded:", allData);
+}
+
+function mapSpotRow(row) {
+    const get = (keys) => {
+        for (const key of keys) {
+            if (row[key] !== undefined && row[key] !== null) return row[key];
+        }
+        return undefined;
+    };
+
+    const latVal = get(['緯度', 'Latitude', 'lat', 'latitude']);
+    const lngVal = get(['経度', 'Longitude', 'lng', 'lon', 'longitude']);
+    const lat = parseFloat(latVal);
+    const lng = parseFloat(lngVal);
+    if (isNaN(lat) || isNaN(lng)) return null;
+
+    return {
+        No: parseInt(get(['No', 'no', 'ID', 'id'])) || 0,
+        スポット名: (get(['スポット名', 'Spot Name', 'Name', 'name', 'spot_name']) || "").toString().trim(),
+        カテゴリ: (get(['カテゴリ', 'Category', 'category']) || "").toString().trim(),
+        緯度: lat,
+        経度: lng,
+        '所要時間（参考）': (get(['所要時間（参考）', 'Duration', 'time_ref']) || "").toString().trim(),
+        説明: (get(['説明', 'Description', 'desc', 'description']) || "").toString().trim(),
+        待ち時間: parseInt(get(['待ち時間', 'Wait Time', 'wait'])) || 0,
+        所要時間: parseInt(get(['所要時間（参考）', 'Duration'])) || 0,
+        '営業時間': (get(['営業時間', 'Hours', 'hours']) || "終日").toString().trim(),
+        '料金': (get(['料金', 'Fee', 'fee']) || "無料").toString().trim()
+    };
 }
 
 async function loadData(lang) {
     try {
         const fileName = lang === 'ja' ? 'spots.xlsx' : `spots_${lang}.xlsx`;
         const response = await fetch(fileName);
-        if (!response.ok) throw new Error(`Failed to load ${fileName}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status} for ${fileName}`);
         const arrayBuffer = await response.arrayBuffer();
-        const data = new Uint8Array(arrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        
-        const mapRow = (row) => {
-            const get = (keys) => {
-                for (const key of keys) {
-                    if (row[key] !== undefined && row[key] !== null) return row[key];
-                }
-                return undefined;
-            };
-            
-            const latVal = get(['緯度', 'Latitude', 'lat', 'latitude']);
-            const lngVal = get(['経度', 'Longitude', 'lng', 'lon', 'longitude']);
-            
-            const lat = parseFloat(latVal);
-            const lng = parseFloat(lngVal);
-            
-            if (isNaN(lat) || isNaN(lng)) return null;
-
-            return {
-                No: parseInt(get(['No', 'no', 'ID', 'id'])) || 0,
-                スポット名: (get(['スポット名', 'Spot Name', 'Name', 'name', 'spot_name']) || "").toString().trim(),
-                カテゴリ: (get(['カテゴリ', 'Category', 'category']) || "").toString().trim(),
-                緯度: lat,
-                経度: lng,
-                '所要時間（参考）': (get(['所要時間（参考）', 'Duration', 'time_ref']) || "").toString().trim(),
-                説明: (get(['説明', 'Description', 'desc', 'description']) || "").toString().trim(),
-                待ち時間: parseInt(get(['待ち時間', 'Wait Time', 'wait'])) || 0,
-                所要時間: parseInt(get(['所要時間（参考）', 'Duration'])) || 0,
-                '営業時間': (get(['営業時間', 'Hours', 'hours']) || "終日").toString().trim(),
-                '料金': (get(['料金', 'Fee', 'fee']) || "無料").toString().trim()
-            };
-        };
+        if (!arrayBuffer || arrayBuffer.byteLength === 0) throw new Error(`Empty Excel file: ${fileName}`);
+        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
 
         const tourismSheet = workbook.Sheets['観光'] || workbook.Sheets['Tourism'];
-        if (tourismSheet) {
-            allData[lang].tourism = XLSX.utils.sheet_to_json(tourismSheet).map(mapRow).filter(s => s !== null);
+        const disasterSheet = workbook.Sheets['防災'] || workbook.Sheets['Disaster'];
+
+        const tourism = tourismSheet ? XLSX.utils.sheet_to_json(tourismSheet).map(mapSpotRow).filter(s => s !== null) : [];
+        const disaster = disasterSheet ? XLSX.utils.sheet_to_json(disasterSheet).map(mapSpotRow).filter(s => s !== null) : [];
+
+        if (tourism.length === 0 && disaster.length === 0) {
+            throw new Error(`No valid rows in ${fileName}`);
         }
 
-        const disasterSheet = workbook.Sheets['防災'] || workbook.Sheets['Disaster'];
-        if (disasterSheet) {
-            allData[lang].disaster = XLSX.utils.sheet_to_json(disasterSheet).map(mapRow).filter(s => s !== null);
-        }
+        allData[lang].tourism = tourism;
+        allData[lang].disaster = disaster;
+        return true;
     } catch (e) {
-        console.error(`Error loading data for ${lang}:`, e);
+        console.error(`Excel load error for ${lang}:`, e.message || e);
+        return false;
+    }
+}
+
+async function loadJsonFallback(langs) {
+    try {
+        const res = await fetch('spots.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status} for spots.json`);
+        const json = await res.json();
+        const tourism = (json.tourism || []).map(mapSpotRow).filter(s => s !== null);
+        const disaster = (json.disaster || []).map(mapSpotRow).filter(s => s !== null);
+        for (const lang of langs) {
+            allData[lang].tourism = tourism;
+            allData[lang].disaster = disaster;
+        }
+        console.log(`spots.json fallback applied to: ${langs.join(', ')}`);
+    } catch (e) {
+        console.error('spots.json fallback failed:', e.message || e);
     }
 }
 
@@ -433,8 +468,14 @@ function updateUI() {
         btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
     });
 
-    document.getElementById('mode-label-tourism').innerText = currentLang === 'ja' ? '観光モード' : 'Tourism';
-    document.getElementById('mode-label-disaster').innerText = currentLang === 'ja' ? '防災モード' : 'Disaster';
+    const modeLabels = {
+        ja: { tourism: '観光モード', disaster: '防災モード' },
+        en: { tourism: 'Tourism', disaster: 'Disaster' },
+        zh: { tourism: '观光模式', disaster: '防灾模式' },
+        ko: { tourism: '관광 모드', disaster: '방재 모드' }
+    };
+    document.getElementById('mode-label-tourism').innerText = modeLabels[currentLang].tourism;
+    document.getElementById('mode-label-disaster').innerText = modeLabels[currentLang].disaster;
     
     document.getElementById('tab-btn-list').innerText = currentMode === 'tourism' ? (isMobile ? t('find').slice(0,3) : t('find')) : (isMobile ? t('shelter').slice(0,3) : t('shelter'));
     document.getElementById('tab-btn-info').innerText = isMobile ? (currentMode === 'tourism' ? t('route') : t('consult')) : t('route_ai');
@@ -455,7 +496,6 @@ function updateUI() {
     selCount.className = `text-[8px] md:text-[9px] font-black ${currentMode === 'tourism' ? 'text-brand-500 bg-brand-50 border-brand-100' : 'text-disaster-600 bg-disaster-50 border-disaster-100'} px-2 py-1.5 rounded-lg border flex-none`;
 
     document.getElementById('clear-btn').innerText = t('selection_reset').toUpperCase();
-    document.getElementById('ai-title-text').innerText = t('ai_guide').toUpperCase();
 
 
     const f1km = document.getElementById('filter-1km');
@@ -550,6 +590,7 @@ function getSpotStyle(spot) {
         '文化': { color: '#8b5cf6', icon: 'fa-palette' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
         '公園': { color: '#16a34a', icon: 'fa-tree' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
         'スポーツ': { color: '#d946ef', icon: 'fa-flag-checkered' },
+        '観光地': { color: '#0ea5e9', icon: 'fa-camera-retro' },
         '指定緊急避難場所': { color: '#EF4123', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
         '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
     };
@@ -605,7 +646,9 @@ function updateList() {
         
         const dBtnColor = currentMode === 'tourism' ? 'bg-slate-50 text-slate-400' : 'bg-disaster-50 text-disaster-400 border border-disaster-100';
         
-        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${spot.説明.split(/[。！!？?]/)[0]}。</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${t(spot.カテゴリ.toLowerCase())}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${btnColor}">${btnT}</button><button class="d-btn px-4 py-2.5 rounded-2xl ${dBtnColor} transition-all"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
+        const shortDesc = spot.説明 ? spot.説明.split(/[。！!？?]/)[0] + '。' : '';
+        const catLabel = t(spot.カテゴリ);
+        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${shortDesc}</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${catLabel}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${btnColor}">${btnT}</button><button class="d-btn px-4 py-2.5 rounded-2xl ${dBtnColor} transition-all"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
         card.onclick = () => { map.flyTo([spot.緯度, spot.経度], 15); };
         card.querySelector('.s-btn').onclick = (e) => { e.stopPropagation(); toggleSelect(spot); };
         card.querySelector('.d-btn').onclick = (e) => { e.stopPropagation(); showDetail(spot); };
@@ -715,27 +758,37 @@ function isOpen(hours) {
 async function callGemini() {
     const key = document.getElementById('gemini-key').value;
     if (!key) return alert("API Key required");
-    const thinking = document.getElementById('ai-thinking');
-    thinking.classList.remove('hidden');
+    const responseEl = document.getElementById('ai-response');
+    const aiBtn = document.getElementById('ai-btn');
+    const origBtnText = aiBtn.innerText;
+    aiBtn.disabled = true;
+    aiBtn.innerText = t('thinking');
+    responseEl.classList.remove('hidden');
+    responseEl.innerText = t('thinking');
     try {
         const interests = Array.from(document.querySelectorAll('.interest-chip.bg-brand-500, .interest-chip.bg-disaster-600')).map(b => b.innerText);
         const req = document.getElementById('ai-request').value;
         const in1 = document.getElementById('ai-input-1').value;
         const in2 = document.getElementById('ai-input-2').value;
-        
-        const prompt = `日田市の観光プランを提案してください。\n言語: ${currentLang}\n興味: ${interests.join(', ')}\n要望: ${req}\n滞在時間: ${in1}\n予算: ${in2}\n選択中のスポット: ${selectedSpots.map(s=>s.スポット名).join(', ')}`;
-        
+
+        const prompt = currentMode === 'tourism'
+            ? `日田市の観光プランを提案してください。\n言語: ${currentLang}\n興味: ${interests.join(', ')}\n要望: ${req}\n滞在時間: ${in1}\n予算: ${in2}\n選択中のスポット: ${selectedSpots.map(s=>s.スポット名).join(', ')}`
+            : `日田市での災害備蓄・防災グッズについてアドバイスしてください。\n言語: ${currentLang}\n備えたい分野: ${interests.join(', ')}\n要望: ${req}\n家族構成: ${in1}\n予算: ${in2}`;
+
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const json = await res.json();
-        alert(json.candidates[0].content.parts[0].text);
+        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error(json?.error?.message || 'No response');
+        responseEl.innerText = text;
     } catch(e) {
-        alert(t('error') + e.message);
+        responseEl.innerText = t('error') + e.message;
     } finally {
-        thinking.classList.add('hidden');
+        aiBtn.disabled = false;
+        aiBtn.innerText = origBtnText;
     }
 }
 
