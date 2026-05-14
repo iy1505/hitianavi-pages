@@ -897,7 +897,7 @@ function updateList() {
                 iconAnchor: [w / 2, h]
             })
         }).addTo(map);
-        marker.on('click', () => { showDetail(spot); setBottomSheetPos('low'); });
+        marker.on('click', () => { showDetail(spot); });
         markers.push(marker);
         
         const card = document.createElement('div');
