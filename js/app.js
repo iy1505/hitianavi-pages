@@ -133,6 +133,89 @@ const i18n = {
 
 function t(key) { return i18n[currentLang][key] || key; }
 
+const apiHelpContent = {
+    ja: {
+        title: 'APIキーの取得方法',
+        html: `
+            <p>Gemini APIキーは <strong>Google AI Studio</strong> で無料で取得できます（要 Google アカウント）。</p>
+            <ol class="list-decimal pl-5 space-y-1">
+                <li>下のリンクから Google AI Studio を開く</li>
+                <li>Google アカウントでログイン</li>
+                <li>「Create API key」をクリック</li>
+                <li>表示されたキー文字列をコピー</li>
+                <li>上の「API Key」欄に貼り付ける</li>
+            </ol>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-brand-500 font-bold underline break-all">
+                <i class="fas fa-up-right-from-square text-[9px]"></i>aistudio.google.com/app/apikey
+            </a>
+            <p class="text-[10px] text-slate-500 mt-2"><i class="fas fa-shield-halved text-amber-500 mr-1"></i>APIキーは秘密情報です。他人に共有しないでください。本アプリではブラウザ内でのみ使用され、外部サーバーに送信されません。</p>
+            <p class="text-[10px] text-slate-500"><i class="fas fa-coins text-slate-400 mr-1"></i>無料枠を超えると課金される可能性があります。利用前に Google AI Studio で無料枠の上限をご確認ください。</p>
+        `
+    },
+    en: {
+        title: 'How to get an API key',
+        html: `
+            <p>Get a free Gemini API key from <strong>Google AI Studio</strong> (Google account required).</p>
+            <ol class="list-decimal pl-5 space-y-1">
+                <li>Open Google AI Studio from the link below</li>
+                <li>Sign in with your Google account</li>
+                <li>Click <em>Create API key</em></li>
+                <li>Copy the generated key string</li>
+                <li>Paste it into the "API Key" field above</li>
+            </ol>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-brand-500 font-bold underline break-all">
+                <i class="fas fa-up-right-from-square text-[9px]"></i>aistudio.google.com/app/apikey
+            </a>
+            <p class="text-[10px] text-slate-500 mt-2"><i class="fas fa-shield-halved text-amber-500 mr-1"></i>Keep your API key secret. This app uses it only inside your browser; it is never sent to any external server.</p>
+            <p class="text-[10px] text-slate-500"><i class="fas fa-coins text-slate-400 mr-1"></i>Usage beyond the free tier may incur charges. Check the free-tier limits in Google AI Studio before heavy use.</p>
+        `
+    },
+    zh: {
+        title: '如何获取 API 密钥',
+        html: `
+            <p>可以在 <strong>Google AI Studio</strong> 免费获取 Gemini API 密钥（需 Google 账号）。</p>
+            <ol class="list-decimal pl-5 space-y-1">
+                <li>通过下方链接打开 Google AI Studio</li>
+                <li>使用 Google 账号登录</li>
+                <li>点击 "Create API key"（创建 API 密钥）</li>
+                <li>复制生成的密钥字符串</li>
+                <li>粘贴到上方的 "API Key" 输入框</li>
+            </ol>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-brand-500 font-bold underline break-all">
+                <i class="fas fa-up-right-from-square text-[9px]"></i>aistudio.google.com/app/apikey
+            </a>
+            <p class="text-[10px] text-slate-500 mt-2"><i class="fas fa-shield-halved text-amber-500 mr-1"></i>API 密钥为机密信息，请勿分享给他人。本应用仅在浏览器中使用密钥，不会发送到任何外部服务器。</p>
+            <p class="text-[10px] text-slate-500"><i class="fas fa-coins text-slate-400 mr-1"></i>超过免费额度可能会产生费用。请在 Google AI Studio 确认免费额度上限后再大量使用。</p>
+        `
+    },
+    ko: {
+        title: 'API 키 발급 방법',
+        html: `
+            <p>Gemini API 키는 <strong>Google AI Studio</strong>에서 무료로 발급받을 수 있습니다 (Google 계정 필요).</p>
+            <ol class="list-decimal pl-5 space-y-1">
+                <li>아래 링크에서 Google AI Studio 열기</li>
+                <li>Google 계정으로 로그인</li>
+                <li>"Create API key" 클릭</li>
+                <li>표시된 키 문자열 복사</li>
+                <li>위의 "API Key" 입력란에 붙여넣기</li>
+            </ol>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-brand-500 font-bold underline break-all">
+                <i class="fas fa-up-right-from-square text-[9px]"></i>aistudio.google.com/app/apikey
+            </a>
+            <p class="text-[10px] text-slate-500 mt-2"><i class="fas fa-shield-halved text-amber-500 mr-1"></i>API 키는 비밀 정보입니다. 타인에게 공유하지 마세요. 본 앱에서는 브라우저 안에서만 사용되며 외부 서버로 전송되지 않습니다.</p>
+            <p class="text-[10px] text-slate-500"><i class="fas fa-coins text-slate-400 mr-1"></i>무료 사용량을 초과하면 요금이 부과될 수 있습니다. 사용 전에 Google AI Studio에서 무료 사용량 한도를 확인하세요.</p>
+        `
+    }
+};
+
+function renderApiHelp() {
+    const c = apiHelpContent[currentLang] || apiHelpContent.ja;
+    const titleEl = document.getElementById('api-help-title');
+    const bodyEl = document.getElementById('api-help-body');
+    if (titleEl) titleEl.innerText = c.title;
+    if (bodyEl) bodyEl.innerHTML = c.html;
+}
+
 async function requestLocation(isStartup = false) {
     if (!navigator.geolocation) {
         if (!isStartup) alert(t('gps_error'));
@@ -561,6 +644,7 @@ function updateUI() {
 
     if (currentMode === 'tourism') { setupTourismAIUI(); renderEvents(); }
     else { setupDisasterAIUI(); renderDisasterInfo(); }
+    renderApiHelp();
 
     const chips = document.getElementById('category-chips');
     chips.innerHTML = '';

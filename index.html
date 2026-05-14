@@ -45,6 +45,9 @@
         .pin-wrap:hover { transform: scale(1.15); }
         .pin-bounce { animation: pin-bounce 1.2s ease-in-out infinite; }
         @keyframes pin-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        #api-help summary { list-style: none; }
+        #api-help summary::-webkit-details-marker { display: none; }
+        #api-help[open] .api-help-chevron { transform: rotate(180deg); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -154,6 +157,13 @@
                                 <div id="ai-interests" class="flex flex-wrap gap-2 w-full"></div>
                                 <textarea id="ai-request" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm h-24 resize-none outline-none focus:ring-2 focus:ring-brand-500" placeholder="..."></textarea>
                                 <button id="ai-btn" class="w-full bg-brand-accent text-white py-4 rounded-[20px] text-sm font-black shadow-lg uppercase">Plan</button>
+                                <details id="api-help" class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                                    <summary class="cursor-pointer px-4 py-3 text-xs font-bold text-slate-600 flex items-center justify-between hover:bg-slate-50 select-none">
+                                        <span class="flex items-center gap-2"><i class="fas fa-circle-info text-brand-500"></i><span id="api-help-title">APIキーの取得方法</span></span>
+                                        <i class="fas fa-chevron-down text-[10px] api-help-chevron transition-transform"></i>
+                                    </summary>
+                                    <div id="api-help-body" class="px-4 pb-4 pt-1 text-[11px] text-slate-600 leading-relaxed space-y-2"></div>
+                                </details>
                                 <div id="ai-response" class="hidden text-xs leading-relaxed bg-white p-5 rounded-3xl border border-slate-100 max-h-80 overflow-y-auto w-full box-border shadow-inner"></div>
                                 </section>
                                 </div>
