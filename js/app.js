@@ -544,7 +544,7 @@ function updateUI() {
     
     const selCount = document.getElementById('selected-count');
     selCount.innerText = `${selectedSpots.length} ${currentMode === 'tourism' ? t('sel_tour') : t('sel_dis')}`;
-    selCount.className = `text-[8px] md:text-[9px] font-black ${currentMode === 'tourism' ? 'text-brand-500 bg-brand-50 border-brand-100' : 'text-disaster-600 bg-disaster-50 border-disaster-100'} px-2 py-1.5 rounded-lg border flex-none`;
+    selCount.className = `text-[9px] font-black ${currentMode === 'tourism' ? 'text-brand-500 bg-brand-50 border-brand-100' : 'text-disaster-600 bg-disaster-50 border-disaster-100'} px-2 py-1 rounded-lg border flex-none ml-auto`;
 
     document.getElementById('clear-btn').innerText = t('selection_reset').toUpperCase();
 
@@ -552,12 +552,12 @@ function updateUI() {
     const f1km = document.getElementById('filter-1km');
     f1km.innerText = t('filter_1km');
     const f1kmColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
-    f1km.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filter1km ? f1kmColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
-    
+    f1km.className = `px-2.5 py-1 rounded-lg border text-[9px] font-bold transition-all flex-none active:scale-95 ${filter1km ? f1kmColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
+
     const fOpen = document.getElementById('filter-open');
     fOpen.innerText = t('filter_open');
     const fOpenColor = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
-    fOpen.className = `px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${filterOpen ? fOpenColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
+    fOpen.className = `px-2.5 py-1 rounded-lg border text-[9px] font-bold transition-all flex-none active:scale-95 ${filterOpen ? fOpenColor + ' text-white border-transparent' : 'bg-white text-slate-500 border-slate-200'}`;
 
     if (currentMode === 'tourism') { setupTourismAIUI(); renderEvents(); }
     else { setupDisasterAIUI(); renderDisasterInfo(); }
@@ -630,27 +630,49 @@ function setupDisasterAIUI() {
     });
 }
 
+const CATEGORY_STYLES = {
+    '歴史':              { color: '#1b4353', icon: 'fa-landmark' },
+    '自然':              { color: '#10b981', icon: 'fa-mountain' },
+    'グルメ':            { color: '#f59e0b', icon: 'fa-utensils' },
+    '温泉':              { color: '#06b6d4', icon: 'fa-hot-tub-person' },
+    '体験':              { color: '#ec4899', icon: 'fa-person-hiking' },
+    '進撃の巨人':        { color: '#a63e3e', icon: 'fa-fist-raised' },
+    '文化':              { color: '#8b5cf6', icon: 'fa-palette' },
+    'ショッピング':      { color: '#f43f5e', icon: 'fa-bag-shopping' },
+    '公園':              { color: '#65a30d', icon: 'fa-tree' },
+    'キャンプ':          { color: '#166534', icon: 'fa-campground' },
+    'スポーツ':          { color: '#d946ef', icon: 'fa-medal' },
+    '観光地':            { color: '#0ea5e9', icon: 'fa-camera-retro' },
+    '指定緊急避難場所':  { color: '#a63e3e', icon: 'fa-person-running' },
+    '指定避難所':        { color: '#7c3aed', icon: 'fa-house-user' },
+    '福祉避難所':        { color: '#2563eb', icon: 'fa-hand-holding-heart' }
+};
+
 function getSpotStyle(spot) {
-    if (spot.sel) return { color: '#a63e3e', icon: 'fa-star' };
-    if (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인')) return { color: '#a63e3e', icon: 'fa-fist-raised' };
-
-    const styles = {
-        '歴史': { color: '#1b4353', icon: 'fa-landmark' }, '自然': { color: '#10b981', icon: 'fa-tree' },
-        'グルメ': { color: '#f59e0b', icon: 'fa-utensils' }, '温泉': { color: '#06b6d4', icon: 'fa-hot-tub' },
-        '体験': { color: '#ec4899', icon: 'fa-hiking' }, '進撃の巨人': { color: '#a63e3e', icon: 'fa-fist-raised' },
-        '文化': { color: '#8b5cf6', icon: 'fa-palette' }, 'ショッピング': { color: '#f43f5e', icon: 'fa-shopping-bag' },
-        '公園': { color: '#16a34a', icon: 'fa-tree' }, 'キャンプ': { color: '#16a34a', icon: 'fa-campground' },
-        'スポーツ': { color: '#d946ef', icon: 'fa-flag-checkered' },
-        '観光地': { color: '#0ea5e9', icon: 'fa-camera-retro' },
-        '指定緊急避難場所': { color: '#a63e3e', icon: 'fa-running' }, '指定避難所': { color: '#9333ea', icon: 'fa-house-user' },
-        '福祉避難所': { color: '#2563eb', icon: 'fa-hand-holding-heart' }
-    };
-
-    // Find the Japanese category key that matches the current spot's category
+    if (spot.スポット名 && (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인'))) {
+        return CATEGORY_STYLES['進撃の巨人'];
+    }
+    // Resolve the Japanese category key from any language label
     const jaKeys = Object.keys(i18n.ja);
     const originalCat = jaKeys.find(key => i18n[currentLang][key] === spot.カテゴリ) || spot.カテゴリ;
+    return CATEGORY_STYLES[originalCat] || { color: '#64748b', icon: 'fa-map-marker-alt' };
+}
 
-    return styles[originalCat] || { color: '#64748b', icon: 'fa-map-marker-alt' };
+function buildPinHtml(style, selected) {
+    const w = selected ? 44 : 34;
+    const h = selected ? 58 : 44;
+    const iconSize = selected ? 17 : 14;
+    const iconTop = selected ? 11 : 8;
+    const bounceCls = selected ? ' pin-bounce' : '';
+    return `
+      <div class="pin-wrap${bounceCls}" style="position:relative;width:${w}px;height:${h}px;">
+        <svg width="${w}" height="${h}" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));display:block;">
+          <path d="M16 1 C7.7 1 1 7.7 1 16 C1 27 16 41 16 41 C16 41 31 27 31 16 C31 7.7 24.3 1 16 1 Z"
+                fill="${style.color}" stroke="white" stroke-width="2"/>
+          <circle cx="16" cy="15" r="8.5" fill="rgba(255,255,255,0.15)"/>
+        </svg>
+        <i class="fas ${style.icon}" style="position:absolute;top:${iconTop}px;left:0;width:${w}px;text-align:center;color:white;font-size:${iconSize}px;line-height:1;pointer-events:none;"></i>
+      </div>`;
 }
 
 function updateList() {
@@ -678,8 +700,15 @@ function updateList() {
 
     filtered.forEach(spot => {
         const st = getSpotStyle(spot);
+        const w = spot.sel ? 44 : 34;
+        const h = spot.sel ? 58 : 44;
         const marker = L.marker([spot.緯度, spot.経度], {
-            icon: L.divIcon({ className: 'm-icon', html: `<div style="color: ${st.color}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));" class="${spot.sel ? 'animate-bounce' : ''}"><i class="fas ${st.icon} ${spot.sel ? 'fa-3x' : 'fa-2x'}"></i></div>`, iconSize: spot.sel?[40,40]:[30,30], iconAnchor: spot.sel?[20,40]:[15,30] })
+            icon: L.divIcon({
+                className: 'm-pin',
+                html: buildPinHtml(st, spot.sel),
+                iconSize: [w, h],
+                iconAnchor: [w / 2, h]
+            })
         }).addTo(map);
         marker.on('click', () => { showDetail(spot); setBottomSheetPos('low'); });
         markers.push(marker);
