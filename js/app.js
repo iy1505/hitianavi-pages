@@ -821,9 +821,9 @@ const CATEGORY_STYLES = {
     '歴史':              { color: '#1b4353', icon: 'fa-landmark' },
     '自然':              { color: '#10b981', icon: 'fa-mountain' },
     'グルメ':            { color: '#f59e0b', icon: 'fa-utensils' },
-    '温泉':              { color: '#06b6d4', icon: 'fa-hot-tub-person' },
+    '温泉':              { color: '#06b6d4', icon: 'fa-mug-hot' },
     '体験':              { color: '#ec4899', icon: 'fa-person-hiking' },
-    '進撃の巨人':        { color: '#a63e3e', icon: 'fa-fist-raised' },
+    '進撃の巨人':        { color: '#a63e3e', icon: 'fa-hand-fist' },
     '文化':              { color: '#8b5cf6', icon: 'fa-palette' },
     'ショッピング':      { color: '#f43f5e', icon: 'fa-bag-shopping' },
     '公園':              { color: '#65a30d', icon: 'fa-tree' },
@@ -831,7 +831,7 @@ const CATEGORY_STYLES = {
     'スポーツ':          { color: '#d946ef', icon: 'fa-medal' },
     '観光地':            { color: '#0ea5e9', icon: 'fa-camera-retro' },
     '指定緊急避難場所':  { color: '#a63e3e', icon: 'fa-person-running' },
-    '指定避難所':        { color: '#7c3aed', icon: 'fa-house-user' },
+    '指定避難所':        { color: '#7c3aed', icon: 'fa-house-chimney' },
     '福祉避難所':        { color: '#2563eb', icon: 'fa-hand-holding-heart' }
 };
 
@@ -842,24 +842,24 @@ function getSpotStyle(spot) {
     // Resolve the Japanese category key from any language label
     const jaKeys = Object.keys(i18n.ja);
     const originalCat = jaKeys.find(key => i18n[currentLang][key] === spot.カテゴリ) || spot.カテゴリ;
-    return CATEGORY_STYLES[originalCat] || { color: '#64748b', icon: 'fa-map-marker-alt' };
+    return CATEGORY_STYLES[originalCat] || { color: '#64748b', icon: 'fa-location-dot' };
 }
 
 function buildPinHtml(style, selected) {
-    const w = selected ? 44 : 34;
-    const h = selected ? 58 : 44;
-    const iconSize = selected ? 17 : 14;
-    const iconTop = selected ? 11 : 8;
+    const w = selected ? 42 : 32;
+    const h = selected ? 55 : 42;
+    const iconSize = selected ? 16 : 13;
+    const iconTop = Math.round(h * 0.20);
     const bounceCls = selected ? ' pin-bounce' : '';
-    return `
-      <div class="pin-wrap${bounceCls}" style="position:relative;width:${w}px;height:${h}px;">
-        <svg width="${w}" height="${h}" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));display:block;">
-          <path d="M16 1 C7.7 1 1 7.7 1 16 C1 27 16 41 16 41 C16 41 31 27 31 16 C31 7.7 24.3 1 16 1 Z"
-                fill="${style.color}" stroke="white" stroke-width="2"/>
-          <circle cx="16" cy="15" r="8.5" fill="rgba(255,255,255,0.15)"/>
-        </svg>
-        <i class="fas ${style.icon}" style="position:absolute;top:${iconTop}px;left:0;width:${w}px;text-align:center;color:white;font-size:${iconSize}px;line-height:1;pointer-events:none;"></i>
-      </div>`;
+    const safeColor = (style && style.color) || '#64748b';
+    const safeIcon = (style && style.icon) || 'fa-location-dot';
+    return `<div class="pin-wrap${bounceCls}" style="position:relative;width:${w}px;height:${h}px;background:transparent;">`
+        + `<svg width="${w}" height="${h}" viewBox="0 0 32 42" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));overflow:visible;">`
+        +   `<path d="M16 1 C7.7 1 1 7.7 1 16 C1 27 16 41 16 41 C16 41 31 27 31 16 C31 7.7 24.3 1 16 1 Z" fill="${safeColor}" stroke="#ffffff" stroke-width="2"/>`
+        +   `<circle cx="16" cy="15" r="8.5" fill="rgba(255,255,255,0.15)"/>`
+        + `</svg>`
+        + `<i class="fa-solid ${safeIcon}" aria-hidden="true" style="position:absolute;top:${iconTop}px;left:0;width:${w}px;text-align:center;color:#ffffff;font-size:${iconSize}px;line-height:1;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,0.25);"></i>`
+        + `</div>`;
 }
 
 function updateList() {
@@ -887,8 +887,8 @@ function updateList() {
 
     filtered.forEach(spot => {
         const st = getSpotStyle(spot);
-        const w = spot.sel ? 44 : 34;
-        const h = spot.sel ? 58 : 44;
+        const w = spot.sel ? 42 : 32;
+        const h = spot.sel ? 55 : 42;
         const marker = L.marker([spot.緯度, spot.経度], {
             icon: L.divIcon({
                 className: 'm-pin',

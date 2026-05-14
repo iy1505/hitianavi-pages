@@ -40,11 +40,12 @@
         .custom-scroll::-webkit-scrollbar { width: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .lang-btn.active { background-color: #1b4353; color: white; border-color: #1b4353; }
-        .leaflet-div-icon.m-pin { background: transparent !important; border: none !important; }
+        .m-pin, .leaflet-marker-icon.m-pin, .leaflet-div-icon.m-pin { background: transparent !important; border: none !important; box-shadow: none !important; }
         .pin-wrap { transform-origin: 50% 100%; transition: transform 0.15s ease-out; }
         .pin-wrap:hover { transform: scale(1.15); }
         .pin-bounce { animation: pin-bounce 1.2s ease-in-out infinite; }
         @keyframes pin-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .pin-wrap .fa, .pin-wrap .fas, .pin-wrap .fa-solid { display: inline-block; }
         #api-help summary { list-style: none; }
         #api-help summary::-webkit-details-marker { display: none; }
         #api-help[open] .api-help-chevron { transform: rotate(180deg); }
