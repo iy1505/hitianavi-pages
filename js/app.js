@@ -469,7 +469,15 @@ function parseTranslateY(el) {
 
 function getMobileSidebarMaxY(sidebar) {
     const sidebarH = sidebar ? sidebar.getBoundingClientRect().height : Math.round(window.innerHeight * 0.85);
-    return Math.max(0, Math.round(sidebarH - SIDEBAR_PEEK));
+    const layoutMaxY = sidebarH - SIDEBAR_PEEK;
+    const visibleBottom = window.visualViewport ? window.visualViewport.offsetTop + window.visualViewport.height : window.innerHeight;
+    const sidebarTop = window.innerHeight - sidebarH;
+    const visibleMaxY = visibleBottom - SIDEBAR_PEEK - sidebarTop;
+    return Math.max(0, Math.round(Math.min(layoutMaxY, visibleMaxY)));
+}
+
+function getMobileViewportHeight() {
+    return window.visualViewport ? window.visualViewport.height : window.innerHeight;
 }
 
 function clampMobileSidebarY(sidebar, y) {
@@ -589,10 +597,10 @@ function initBottomSheet() {
 
             if (duration < 300 && Math.abs(dy) > 30) {
                 if (dy < 0) setBottomSheetPos(currentY > maxY * 0.55 ? 'mid' : 'full');
-                else setBottomSheetPos(currentY < maxY * 0.45 ? 'mid' : 'low');
+                else setBottomSheetPos(currentY > maxY * 0.82 ? 'low' : 'mid');
             } else {
                 if (currentY < maxY * 0.25) setBottomSheetPos('full');
-                else if (currentY < maxY * 0.75) setBottomSheetPos('mid');
+                else if (currentY < maxY * 0.88) setBottomSheetPos('mid');
                 else setBottomSheetPos('low');
             }
         }
@@ -660,7 +668,7 @@ function setBottomSheetPos(pos) {
     if (!sidebar) return;
     if (window.innerWidth < 768) {
         // Pixel-based positions are more reliable than vh units on iOS where the address bar shrinks the visible area.
-        const h = window.innerHeight;
+        const h = getMobileViewportHeight();
         const maxY = getMobileSidebarMaxY(sidebar);
         if (pos === 'full') {
             sidebar.style.transform = 'translateY(0)';
