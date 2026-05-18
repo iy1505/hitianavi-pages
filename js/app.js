@@ -464,13 +464,18 @@ function parseTranslateY(el) {
     return parts.length === 6 ? parts[5] : parts[13];
 }
 
+function getMobileSidebarMaxY(sidebar) {
+    const sidebarH = sidebar ? sidebar.getBoundingClientRect().height : Math.round(window.innerHeight * 0.85);
+    return Math.max(0, Math.round(sidebarH - SIDEBAR_PEEK));
+}
+
 function clampSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     if (window.innerWidth < 768) {
         // On mobile, ensure transform doesn't push sidebar fully off-screen.
         const ty = parseTranslateY(sidebar);
-        const maxTy = window.innerHeight - SIDEBAR_PEEK;
+        const maxTy = getMobileSidebarMaxY(sidebar);
         if (ty > maxTy) {
             // Re-snap to the low position with pixel-precise translate
             setBottomSheetPos('low');
@@ -539,9 +544,9 @@ function initBottomSheet() {
             let newY = startTranslateY + dy;
             // Soft top boundary (rubber-band when pulled above full-open)
             if (newY < 0) newY *= 0.2;
-            // Hard bottom boundary so the handle can't be dragged below the viewport
-            const maxY = window.innerHeight - SIDEBAR_PEEK;
-            if (newY > maxY) newY = maxY + (newY - maxY) * 0.2;
+            // Hard bottom boundary so the handle always remains visible.
+            const maxY = getMobileSidebarMaxY(sidebar);
+            if (newY > maxY) newY = maxY;
             sidebar.style.transform = `translateY(${newY}px)`;
             // Prevent page scrolling competing with drag on iOS
             if (e.cancelable) e.preventDefault();
@@ -569,15 +574,15 @@ function initBottomSheet() {
 
         if (window.innerWidth < 768) {
             const currentY = parseTranslateY(sidebar);
-            const screenHeight = window.innerHeight;
+            const maxY = getMobileSidebarMaxY(sidebar);
             sidebar.style.transform = '';
 
             if (duration < 300 && Math.abs(dy) > 30) {
-                if (dy < 0) setBottomSheetPos(currentY > screenHeight * 0.4 ? 'mid' : 'full');
-                else setBottomSheetPos(currentY < screenHeight * 0.4 ? 'mid' : 'low');
+                if (dy < 0) setBottomSheetPos(currentY > maxY * 0.55 ? 'mid' : 'full');
+                else setBottomSheetPos(currentY < maxY * 0.45 ? 'mid' : 'low');
             } else {
-                if (currentY < screenHeight * 0.2) setBottomSheetPos('full');
-                else if (currentY < screenHeight * 0.6) setBottomSheetPos('mid');
+                if (currentY < maxY * 0.25) setBottomSheetPos('full');
+                else if (currentY < maxY * 0.75) setBottomSheetPos('mid');
                 else setBottomSheetPos('low');
             }
         }
@@ -646,18 +651,16 @@ function setBottomSheetPos(pos) {
     if (window.innerWidth < 768) {
         // Pixel-based positions are more reliable than vh units on iOS where the address bar shrinks the visible area.
         const h = window.innerHeight;
+        const maxY = getMobileSidebarMaxY(sidebar);
         if (pos === 'full') {
             sidebar.style.transform = 'translateY(0)';
             sidebar.classList.add('open');
         } else if (pos === 'mid') {
-            sidebar.style.transform = `translateY(${Math.round(h * 0.45)}px)`;
+            sidebar.style.transform = `translateY(${Math.min(Math.round(h * 0.45), maxY)}px)`;
             sidebar.classList.add('open');
         } else {
-            // 'low' — leave the handle (~80px) peeking above viewport bottom
-            const peek = SIDEBAR_PEEK;
-            // Sidebar height in CSS is 85vh, so translate by (sidebar_top + sidebar_height - peek) - sidebar_top = sidebar_height - peek
-            const sidebarH = Math.round(h * 0.85);
-            sidebar.style.transform = `translateY(${sidebarH - peek}px)`;
+            // 'low' leaves the handle area peeking above the viewport bottom.
+            sidebar.style.transform = `translateY(${maxY}px)`;
             sidebar.classList.remove('open');
         }
     } else {
