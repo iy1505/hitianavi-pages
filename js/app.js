@@ -333,10 +333,12 @@ function mapSpotRow(row) {
     const lng = parseFloat(lngVal);
     if (isNaN(lat) || isNaN(lng)) return null;
 
+    const category = normalizeCategory((get(['カテゴリ', 'Category', 'category']) || "").toString().trim());
+
     return {
         No: parseInt(get(['No', 'no', 'ID', 'id'])) || 0,
         スポット名: (get(['スポット名', 'Spot Name', 'Name', 'name', 'spot_name']) || "").toString().trim(),
-        カテゴリ: (get(['カテゴリ', 'Category', 'category']) || "").toString().trim(),
+        カテゴリ: category || '観光地',
         緯度: lat,
         経度: lng,
         '所要時間（参考）': (get(['所要時間（参考）', 'Duration', 'time_ref']) || "").toString().trim(),
@@ -752,15 +754,13 @@ function updateUI() {
     const chips = document.getElementById('category-chips');
     chips.innerHTML = '';
     const data = allData[currentLang][currentMode] || [];
-    ['all', ...new Set(data.map(s => s.カテゴリ))].forEach(cat => {
+    ['all', ...new Set(data.map(s => normalizeCategory(s.カテゴリ) || '観光地'))].forEach(cat => {
         const b = document.createElement('button');
         const active = currentCategory === cat;
         const color = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
         b.className = `flex-none px-4 py-2 rounded-xl text-[10px] font-black border transition-all ${active ? color + ' text-white border-transparent shadow-md' : 'bg-white text-slate-400 border-slate-200'}`;
         
-        let label = cat;
-        if (cat === 'all') label = currentLang === 'ja' ? 'すべて' : 'ALL';
-        else if (i18n[currentLang][cat.toLowerCase()]) label = t(cat.toLowerCase());
+        let label = cat === 'all' ? (currentLang === 'ja' ? 'すべて' : 'ALL') : getCategoryLabel(cat);
         
         b.innerText = label.toUpperCase();
         b.onclick = () => { currentCategory = cat; updateUI(); };
@@ -822,27 +822,65 @@ const CATEGORY_STYLES = {
     '自然':              { color: '#10b981', icon: 'fa-mountain' },
     'グルメ':            { color: '#f59e0b', icon: 'fa-utensils' },
     '温泉':              { color: '#06b6d4', icon: 'fa-mug-hot' },
-    '体験':              { color: '#ec4899', icon: 'fa-person-hiking' },
-    '進撃の巨人':        { color: '#a63e3e', icon: 'fa-hand-fist' },
+    '体験':              { color: '#ec4899', icon: 'fa-hiking' },
+    '進撃の巨人':        { color: '#a63e3e', icon: 'fa-fist-raised' },
     '文化':              { color: '#8b5cf6', icon: 'fa-palette' },
-    'ショッピング':      { color: '#f43f5e', icon: 'fa-bag-shopping' },
+    'ショッピング':      { color: '#f43f5e', icon: 'fa-shopping-bag' },
     '公園':              { color: '#65a30d', icon: 'fa-tree' },
     'キャンプ':          { color: '#166534', icon: 'fa-campground' },
     'スポーツ':          { color: '#d946ef', icon: 'fa-medal' },
     '観光地':            { color: '#0ea5e9', icon: 'fa-camera-retro' },
-    '指定緊急避難場所':  { color: '#a63e3e', icon: 'fa-person-running' },
-    '指定避難所':        { color: '#7c3aed', icon: 'fa-house-chimney' },
+    '指定緊急避難場所':  { color: '#a63e3e', icon: 'fa-running' },
+    '指定避難所':        { color: '#7c3aed', icon: 'fa-home' },
     '福祉避難所':        { color: '#2563eb', icon: 'fa-hand-holding-heart' }
 };
+
+const CATEGORY_KEYS = {
+    history: '歴史',
+    nature: '自然',
+    gourmet: 'グルメ',
+    onsen: '温泉',
+    experience: '体験',
+    shingeki: '進撃の巨人',
+    culture: '文化',
+    shopping: 'ショッピング',
+    park: '公園',
+    camp: 'キャンプ',
+    sports: 'スポーツ',
+    sightseeing: '観光地'
+};
+
+const CATEGORY_LABEL_TO_KEY = Object.entries(i18n).reduce((acc, [, dict]) => {
+    for (const [semanticKey, jaKey] of Object.entries(CATEGORY_KEYS)) {
+        [jaKey, semanticKey, dict[semanticKey], dict[jaKey]].forEach(label => {
+            if (label) acc[label.toString().trim().toLowerCase()] = jaKey;
+        });
+    }
+    ['指定緊急避難場所', '指定避難所', '福祉避難所'].forEach(jaKey => {
+        [jaKey, dict[jaKey]].forEach(label => {
+            if (label) acc[label.toString().trim().toLowerCase()] = jaKey;
+        });
+    });
+    return acc;
+}, {});
+
+function normalizeCategory(category) {
+    const raw = (category || '').toString().trim();
+    if (!raw) return '';
+    return CATEGORY_LABEL_TO_KEY[raw.toLowerCase()] || raw;
+}
+
+function getCategoryLabel(category) {
+    const normalized = normalizeCategory(category);
+    return i18n[currentLang][normalized] || normalized;
+}
 
 function getSpotStyle(spot) {
     if (spot.スポット名 && (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인'))) {
         return CATEGORY_STYLES['進撃の巨人'];
     }
-    // Resolve the Japanese category key from any language label
-    const jaKeys = Object.keys(i18n.ja);
-    const originalCat = jaKeys.find(key => i18n[currentLang][key] === spot.カテゴリ) || spot.カテゴリ;
-    return CATEGORY_STYLES[originalCat] || { color: '#64748b', icon: 'fa-location-dot' };
+    const originalCat = normalizeCategory(spot.カテゴリ);
+    return CATEGORY_STYLES[originalCat] || CATEGORY_STYLES['観光地'];
 }
 
 function buildPinHtml(style, selected) {
@@ -852,13 +890,13 @@ function buildPinHtml(style, selected) {
     const iconTop = Math.round(h * 0.20);
     const bounceCls = selected ? ' pin-bounce' : '';
     const safeColor = (style && style.color) || '#64748b';
-    const safeIcon = (style && style.icon) || 'fa-location-dot';
+    const safeIcon = (style && style.icon) || 'fa-map-marker-alt';
     return `<div class="pin-wrap${bounceCls}" style="position:relative;width:${w}px;height:${h}px;background:transparent;">`
         + `<svg width="${w}" height="${h}" viewBox="0 0 32 42" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));overflow:visible;">`
         +   `<path d="M16 1 C7.7 1 1 7.7 1 16 C1 27 16 41 16 41 C16 41 31 27 31 16 C31 7.7 24.3 1 16 1 Z" fill="${safeColor}" stroke="#ffffff" stroke-width="2"/>`
         +   `<circle cx="16" cy="15" r="8.5" fill="rgba(255,255,255,0.15)"/>`
         + `</svg>`
-        + `<i class="fa-solid ${safeIcon}" aria-hidden="true" style="position:absolute;top:${iconTop}px;left:0;width:${w}px;text-align:center;color:#ffffff;font-size:${iconSize}px;line-height:1;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,0.25);"></i>`
+        + `<i class="fas fa-solid ${safeIcon}" aria-hidden="true" style="position:absolute;top:${iconTop}px;left:0;width:${w}px;text-align:center;color:#ffffff;font-size:${iconSize}px;line-height:1;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,0.25);"></i>`
         + `</div>`;
 }
 
@@ -872,8 +910,9 @@ function updateList() {
         sel: selectedSpots.some(x => x.No === s.No)
     }));
     const filtered = items.filter(s => {
-        const mSearch = s.スポット名.toLowerCase().includes(search) || s.説明.toLowerCase().includes(search) || s.カテゴリ.toLowerCase().includes(search);
-        const mCat = currentCategory === 'all' || s.カテゴリ === currentCategory;
+        const catLabel = getCategoryLabel(s.カテゴリ).toLowerCase();
+        const mSearch = s.スポット名.toLowerCase().includes(search) || s.説明.toLowerCase().includes(search) || s.カテゴリ.toLowerCase().includes(search) || catLabel.includes(search);
+        const mCat = currentCategory === 'all' || normalizeCategory(s.カテゴリ) === currentCategory;
         const mDist = !filter1km || s.dist <= 1.0;
         const mOpen = !filterOpen || isOpen(s.営業時間);
         return (mSearch && mCat && mDist && mOpen) || s.sel;
@@ -914,7 +953,7 @@ function updateList() {
         const dBtnColor = currentMode === 'tourism' ? 'bg-slate-50 text-slate-400' : 'bg-disaster-50 text-disaster-400 border border-disaster-100';
         
         const shortDesc = spot.説明 ? spot.説明.split(/[。！!？?]/)[0] + '。' : '';
-        const catLabel = t(spot.カテゴリ);
+        const catLabel = getCategoryLabel(spot.カテゴリ);
         card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${shortDesc}</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${catLabel}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${btnColor}">${btnT}</button><button class="d-btn px-4 py-2.5 rounded-2xl ${dBtnColor} transition-all"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
         card.onclick = () => { map.flyTo([spot.緯度, spot.経度], 15); };
         card.querySelector('.s-btn').onclick = (e) => { e.stopPropagation(); toggleSelect(spot); };
