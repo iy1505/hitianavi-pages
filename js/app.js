@@ -469,16 +469,20 @@ function getMobileSidebarMaxY(sidebar) {
     return Math.max(0, Math.round(sidebarH - SIDEBAR_PEEK));
 }
 
+function clampMobileSidebarY(sidebar, y) {
+    const maxY = getMobileSidebarMaxY(sidebar);
+    return Math.max(0, Math.min(maxY, Number.isFinite(y) ? y : maxY));
+}
+
 function clampSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     if (window.innerWidth < 768) {
         // On mobile, ensure transform doesn't push sidebar fully off-screen.
         const ty = parseTranslateY(sidebar);
-        const maxTy = getMobileSidebarMaxY(sidebar);
-        if (ty > maxTy) {
-            // Re-snap to the low position with pixel-precise translate
-            setBottomSheetPos('low');
+        const safeY = clampMobileSidebarY(sidebar, ty);
+        if (ty !== safeY) {
+            sidebar.style.transform = `translateY(${safeY}px)`;
         }
     } else if (sidebar.style.left || sidebar.style.top) {
         const w = sidebar.offsetWidth || 380;
@@ -526,7 +530,8 @@ function initBottomSheet() {
         startTop = rect.top;
 
         if (window.innerWidth < 768) {
-            startTranslateY = parseTranslateY(sidebar);
+            startTranslateY = clampMobileSidebarY(sidebar, parseTranslateY(sidebar));
+            sidebar.style.transform = `translateY(${startTranslateY}px)`;
         }
 
         sidebar.classList.add('dragging');
@@ -545,8 +550,7 @@ function initBottomSheet() {
             // Soft top boundary (rubber-band when pulled above full-open)
             if (newY < 0) newY *= 0.2;
             // Hard bottom boundary so the handle always remains visible.
-            const maxY = getMobileSidebarMaxY(sidebar);
-            if (newY > maxY) newY = maxY;
+            newY = clampMobileSidebarY(sidebar, newY);
             sidebar.style.transform = `translateY(${newY}px)`;
             // Prevent page scrolling competing with drag on iOS
             if (e.cancelable) e.preventDefault();
