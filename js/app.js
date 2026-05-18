@@ -15,6 +15,7 @@ let filterOpen = false;
 let userLocation = [33.3219, 130.9414];
 let selectedSpots = [];
 let userMarker;
+let lastSidebarDragAt = 0;
 
 const i18n = {
     ja: {
@@ -427,7 +428,8 @@ function setupEventListeners() {
     
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.onclick = () => { 
-            currentLang = btn.getAttribute('data-lang'); 
+            currentLang = btn.getAttribute('data-lang');
+            syncSelectedSpotsToCurrentData();
             updateUI(); 
         };
     });
@@ -436,13 +438,14 @@ function setupEventListeners() {
     const handle = document.getElementById('drawer-handle');
     handle.onclick = (e) => {
         if (e.target.closest('input, label, select, button')) return;
+        if (Date.now() - lastSidebarDragAt < 350) return;
         const sidebar = document.getElementById('sidebar');
         if (window.innerWidth < 768) {
             const currentY = parseTranslateY(sidebar);
-            const screenHeight = window.innerHeight;
+            const maxY = getMobileSidebarMaxY(sidebar);
             // Cycle: low -> mid -> full -> low
-            if (currentY > screenHeight * 0.5) setBottomSheetPos('mid');
-            else if (currentY > screenHeight * 0.1) setBottomSheetPos('full');
+            if (currentY > maxY * 0.65) setBottomSheetPos('mid');
+            else if (currentY > maxY * 0.15) setBottomSheetPos('full');
             else setBottomSheetPos('low');
         } else {
             sidebar.classList.toggle('collapsed');
@@ -544,6 +547,9 @@ function initBottomSheet() {
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const dx = clientX - startX;
         const dy = clientY - startY;
+        if (Math.abs(dy) > 6 || Math.abs((e && e.changedTouches ? e.changedTouches[0].clientX : (e ? e.clientX : startX)) - startX) > 6) {
+            lastSidebarDragAt = Date.now();
+        }
 
         if (window.innerWidth < 768) {
             let newY = startTranslateY + dy;
@@ -882,6 +888,16 @@ function getCategoryLabel(category) {
     return i18n[currentLang][normalized] || normalized;
 }
 
+function escapeHtml(value) {
+    return (value || '').toString().replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[ch]));
+}
+
 function getSpotStyle(spot) {
     if (spot.スポット名 && (spot.スポット名.includes('進撃の巨人') || spot.スポット名.includes('Attack on Titan') || spot.スポット名.includes('进击的巨人') || spot.スポット名.includes('진격의 거인'))) {
         return CATEGORY_STYLES['進撃の巨人'];
@@ -961,7 +977,7 @@ function updateList() {
         
         const shortDesc = spot.説明 ? spot.説明.split(/[。！!？?]/)[0] + '。' : '';
         const catLabel = getCategoryLabel(spot.カテゴリ);
-        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${spot.スポット名}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${shortDesc}</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${catLabel}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${btnColor}">${btnT}</button><button class="d-btn px-4 py-2.5 rounded-2xl ${dBtnColor} transition-all"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
+        card.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex-1 pr-2"><h4 class="font-black text-slate-800 text-sm leading-tight">${escapeHtml(spot.スポット名)}</h4><p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">${escapeHtml(shortDesc)}</p></div><div class="text-right flex-none"><span class="text-[9px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500 block mb-1">${spot.dist.toFixed(1)}km</span><span class="text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200 text-slate-400 block truncate max-w-[60px]">${escapeHtml(catLabel)}</span></div></div><div class="flex gap-2 mt-4"><button class="s-btn flex-1 py-2.5 rounded-2xl text-[10px] font-black transition-all ${btnColor}">${escapeHtml(btnT)}</button><button class="d-btn px-4 py-2.5 rounded-2xl ${dBtnColor} transition-all"><i class="fas fa-chevron-right text-xs"></i></button></div>`;
         card.onclick = () => { map.flyTo([spot.緯度, spot.経度], 15); };
         card.querySelector('.s-btn').onclick = (e) => { e.stopPropagation(); toggleSelect(spot); };
         card.querySelector('.d-btn').onclick = (e) => { e.stopPropagation(); showDetail(spot); };
@@ -988,6 +1004,11 @@ function toggleSelect(spot) {
     if (i >= 0) selectedSpots.splice(i, 1); else selectedSpots.push(spot);
     updateList();
     document.getElementById('selected-count').innerText = `${selectedSpots.length} ${currentMode === 'tourism' ? t('sel_tour') : t('sel_dis')}`;
+}
+
+function syncSelectedSpotsToCurrentData() {
+    const data = allData[currentLang][currentMode] || [];
+    selectedSpots = selectedSpots.map(spot => data.find(item => item.No === spot.No) || spot);
 }
 
 function calculateDistance(l1, o1, l2, o2) {
@@ -1033,7 +1054,7 @@ function optimizeRoute() {
     const borderColor = currentMode === 'tourism' ? 'border-brand-100' : 'border-disaster-100';
     const bulletBg = currentMode === 'tourism' ? 'bg-brand-500' : 'bg-disaster-600';
 
-    stats.innerHTML = `<div class="flex justify-between items-center bg-white/50 p-3 rounded-2xl mb-2"><div class="text-center flex-1 border-r ${borderColor}"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_dist')}</div><div class="text-xs font-black ${accentColor}">${dist.toFixed(2)}km</div></div><div class="text-center flex-1"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${t('total_time')}</div><div class="text-xs font-black ${accentColor}">${timeStr}</div></div></div><div class="space-y-1.5 mt-3">${route.map((s,i)=>`<div class="text-[11px] font-bold flex items-center gap-2"><span class="w-4 h-4 rounded-full ${bulletBg} text-white flex items-center justify-center text-[8px]">${i+1}</span>${s.スポット名}</div>`).join('')}</div>`;
+    stats.innerHTML = `<div class="flex justify-between items-center bg-white/50 p-3 rounded-2xl mb-2"><div class="text-center flex-1 border-r ${borderColor}"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${escapeHtml(t('total_dist'))}</div><div class="text-xs font-black ${accentColor}">${dist.toFixed(2)}km</div></div><div class="text-center flex-1"><div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${escapeHtml(t('total_time'))}</div><div class="text-xs font-black ${accentColor}">${escapeHtml(timeStr)}</div></div></div><div class="space-y-1.5 mt-3">${route.map((s,i)=>`<div class="text-[11px] font-bold flex items-center gap-2"><span class="w-4 h-4 rounded-full ${bulletBg} text-white flex items-center justify-center text-[8px]">${i+1}</span>${escapeHtml(s.スポット名)}</div>`).join('')}</div>`;
     
     const routeInfo = document.getElementById('route-info');
     routeInfo.className = `${bgColor} p-5 rounded-[32px] border ${borderColor} shadow-sm space-y-4 w-full box-border`;
