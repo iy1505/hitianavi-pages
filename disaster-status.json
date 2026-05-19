@@ -1,0 +1,11 @@
+{
+  "_memo": "番号かスポット名を入れる片方だけでOK。警告を出したいならfalseからtrueにする",
+  "floodActive": false,
+  "floodMessage": "大雨時は川沿いや橋を通る経路に注意してください。浸水・通行止め情報を確認し、危険な場合は別の避難所を検討してください。",
+  "floodWarningSpotNos": [],
+  "floodWarningSpotNames": [],
+  "earthquakeActive": false,
+  "earthquakeMessage": "地震時は建物や周辺道路の被害、土砂災害、落下物などに注意してください。安全が確認できない場合は別の避難所も検討してください。",
+  "earthquakeWarningSpotNos": [],
+  "earthquakeWarningSpotNames": []
+}
