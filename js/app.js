@@ -448,7 +448,7 @@ function setupEventListeners() {
             else if (currentY > maxY * 0.15) setBottomSheetPos('full');
             else setBottomSheetPos('low');
         } else {
-            sidebar.classList.toggle('collapsed');
+            sidebar.classList.remove('collapsed');
         }
     };
 }
@@ -495,7 +495,9 @@ function clampSidebar() {
         if (ty !== safeY) {
             sidebar.style.transform = `translateY(${safeY}px)`;
         }
-    } else if (sidebar.style.left || sidebar.style.top) {
+    } else {
+        sidebar.classList.remove('collapsed');
+        sidebar.style.transform = '';
         const w = sidebar.offsetWidth || 380;
         const curLeft = parseFloat(sidebar.style.left);
         const curTop = parseFloat(sidebar.style.top);
@@ -682,8 +684,7 @@ function setBottomSheetPos(pos) {
             sidebar.classList.remove('open');
         }
     } else {
-        if (pos === 'low') sidebar.classList.add('collapsed');
-        else sidebar.classList.remove('collapsed');
+        sidebar.classList.remove('collapsed');
     }
 }
 
