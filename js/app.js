@@ -36,10 +36,15 @@ const i18n = {
         d_portal_desc: "日田市の最新の防災情報をまとめて確認できます。",
         oita_bousai_desc: "大分県の防災に関する知識や情報をリアルタイムで提供。",
         emergency_contact_desc: "急な病気やケガで、病院に行くべきか救急車を呼ぶべきか迷った時の相談窓口です。",
+        event_more: "詳しく見る",
         event_1: "天領日田おひなまつり", event_desc_1: "豆田町一帯で雛人形を展示する春の風物詩。江戸〜昭和の雛人形が並びます。",
+        event_detail_1: "開催時期: 2月中旬〜3月下旬ごろ\n主な場所: 豆田町・隈町周辺の旧家や資料館\n見どころ: 商家に受け継がれてきた雛人形や雛道具を、歴史ある町並みと一緒に楽しめます。草野本家、日本丸館、天領日田資料館などを歩いて巡るのがおすすめです。\n訪問メモ: 豆田町は道幅が細い場所があります。徒歩でゆっくり回ると、町並みや土産店にも立ち寄りやすくなります。",
         event_2: "日田川開き観光祭", event_desc_2: "九州最大級の花火大会を含む日田最大の祭り。三隈川で鵜飼いも始まります。",
+        event_detail_2: "開催時期: 5月下旬ごろ\n主な場所: 三隈川周辺・日田市中心部\n見どころ: 水郷日田の夏の始まりを告げる大きな祭りです。音楽大パレード、川沿いの催し、夜の花火が人気で、三隈川の水面に映る花火も楽しめます。\n訪問メモ: 花火の日は周辺道路や駐車場が混みやすくなります。早めの移動と公共交通の利用を考えておくと安心です。",
         event_3: "日田祇園祭", event_desc_3: "300年以上の歴史を持つユネスコ無形文化遺産の祭り。豪華な山鉾が練り歩きます。",
+        event_detail_3: "開催時期: 7月下旬ごろ\n主な場所: 豆田地区・隈地区\n見どころ: 絢爛な山鉾が町を巡る、日田を代表する夏祭りです。夜には提灯を灯した山鉾が幻想的に見え、昼と夜で違う雰囲気を楽しめます。\n訪問メモ: 山鉾の巡行ルート周辺は混雑します。写真を撮る場合も、通行や巡行の妨げにならない場所から見るのが安全です。",
         event_4: "千年あかり", event_desc_4: "豆田町と花月川周辺を約3万本の竹灯籠が彩る幻想的な秋の夜のイベント。",
+        event_detail_4: "開催時期: 11月上旬ごろ\n主な場所: 豆田町・花月川周辺\n見どころ: 竹灯籠の明かりが町並みと川沿いを包み、秋の夜の日田らしい景色を楽しめます。日田天領まつりとあわせて訪れる人も多いイベントです。\n訪問メモ: 夜は足元が暗い場所があります。歩きやすい靴で、写真撮影時も周囲の人の流れに気をつけると快適です。",
         total_dist: "総距離", total_time: "合計時間", shelter_dist: "避難距離", shelter_time: "時間の目安", thinking: "AIがプランを練っています...", error: "エラーが発生しました: ",
         gps_error: "現在地を取得できませんでした。設定を確認してください。",
         selection_reset: "選択をすべてリセット",
@@ -64,10 +69,15 @@ const i18n = {
         d_portal_desc: "Unified source for Hita City's latest disaster info.",
         oita_bousai_desc: "Real-time disaster knowledge and info across Oita.",
         emergency_contact_desc: "Consultation for sudden illness or injury (Should I go to hospital or call ambulance?).",
+        event_more: "Details",
         event_1: "Hita Ohina-matsuri", event_desc_1: "A spring tradition in Mameda town displaying doll collections from Edo to Showa eras.",
+        event_detail_1: "Season: Around mid-February to late March\nMain area: Historic houses and museums around Mameda and Kuma\nHighlights: Doll collections and miniature furnishings are displayed inside old merchant houses and cultural facilities. It pairs especially well with a slow walk through Mameda's preserved streets.\nVisitor note: Mameda has narrow streets, so walking is usually the easiest way to enjoy shops, museums, and the townscape.",
         event_2: "Hita Kawabiraki Festival", event_desc_2: "Hita's largest festival featuring major fireworks and cormorant fishing on Mikuma river.",
+        event_detail_2: "Season: Around late May\nMain area: Mikuma River and central Hita\nHighlights: This festival marks the start of Hita's river season, with parades, riverside events, and large fireworks reflected on the water.\nVisitor note: Roads and parking areas can become crowded on fireworks nights. Arriving early or using public transport makes the visit smoother.",
         event_3: "Hita Gion Festival", event_desc_3: "UNESCO Intangible Cultural Heritage with 300 years of history and ornate floats.",
+        event_detail_3: "Season: Around late July\nMain area: Mameda and Kuma districts\nHighlights: Lavish festival floats move through the town. The daytime procession is powerful, while the lantern-lit night view has a different, more atmospheric character.\nVisitor note: The procession route gets busy. Watch and take photos from places that do not block float movement or pedestrian flow.",
         event_4: "Sennen-Akari", event_desc_4: "A mystical autumn night event with 30,000 bamboo lanterns lighting up Mameda town.",
+        event_detail_4: "Season: Around early November\nMain area: Mameda and the Kagetsu River area\nHighlights: Thousands of bamboo lanterns illuminate the old streets and riverside, creating one of Hita's most memorable autumn night scenes.\nVisitor note: Some riverside areas are dim. Comfortable shoes and a little extra care while taking photos are recommended.",
         total_dist: "Distance", total_time: "Total Time", shelter_dist: "Distance", shelter_time: "Est. Time", thinking: "AI is thinking...", error: "Error occurred: ",
         gps_error: "Could not get current location. Please check settings.",
         selection_reset: "Selection Reset",
@@ -92,10 +102,15 @@ const i18n = {
         d_portal_desc: "可以集中确认日田市最新的防灾信息。",
         oita_bousai_desc: "实时提供大分县防灾相关的知识和信息。",
         emergency_contact_desc: "因突发疾病或受伤，犹豫是否该去医院或叫救护车时的咨询窗口。",
+        event_more: "查看详情",
         event_1: "天领日田女儿节", event_desc_1: "豆田町一带展示江户至昭和时期女儿节人偶的春季特色活动。",
+        event_detail_1: "举办时期: 约2月中旬至3月下旬\n主要地点: 豆田町、隈町周边的老宅和资料馆\n看点: 可以在历史街区中欣赏商家传承下来的女儿节人偶和精致道具。适合边散步边参观资料馆与店铺。\n参观提示: 豆田町有些道路较窄，步行游览更方便，也更容易顺路逛土产店。",
         event_2: "日田川开观光祭", event_desc_2: "日田最大的节日，包括九州最大规模的烟花大会和三隈川鸬鹚捕鱼。",
+        event_detail_2: "举办时期: 约5月下旬\n主要地点: 三隈川周边、日田市中心部\n看点: 这是宣告水乡日田夏季开始的大型节日，有游行、河畔活动和夜间烟花。烟花映在三隈川水面上的景色很受欢迎。\n参观提示: 烟花当晚道路和停车场容易拥挤，建议提前移动或使用公共交通。",
         event_3: "日田祇园祭", event_desc_3: "拥有300多年历史的联合国教科文组织非物质文化遗产节日，华丽的山鉾巡游。",
+        event_detail_3: "举办时期: 约7月下旬\n主要地点: 豆田地区、隈地区\n看点: 华丽的山鉾在街区巡行，是日田代表性的夏季祭典。白天气势十足，夜晚点灯后又有不同的幻想氛围。\n参观提示: 巡行路线周边会很拥挤。拍照时请站在不影响通行和巡行的位置。",
         event_4: "千年灯火", event_desc_4: "约3万盏竹灯笼点亮豆田町和花月川周边的奇幻秋夜活动。",
+        event_detail_4: "举办时期: 约11月上旬\n主要地点: 豆田町、花月川周边\n看点: 竹灯笼的光点亮老街和河畔，是日田秋夜很有代表性的景色。也常与日田天领祭一起游览。\n参观提示: 夜间部分区域较暗，建议穿便于步行的鞋，拍照时也注意周围人流。",
         total_dist: "总距离", total_time: "总时间", shelter_dist: "避难距离", shelter_time: "预计时间", thinking: "AI 正在思考...", error: "发生错误: ",
         gps_error: "无法获取当前位置。请检查设置。",
         selection_reset: "重置所有选择",
@@ -121,10 +136,15 @@ const i18n = {
         d_portal_desc: "히타시의 최신 방재 정보를 모아서 확인할 수 있습니다.",
         oita_bousai_desc: "오이타현의 방재에 관한 지식과 정보를 실시간 제공.",
         emergency_contact_desc: "갑작스러운 질병이나 부상으로 병원에 가야 할지, 구급차를 불러야 할지 망설여질 때의 상담 창구입니다.",
+        event_more: "자세히 보기",
         event_1: "텐료 히타 오히나마츠리", event_desc_1: "마메다마치 일대에서 히나 인형을 전시하는 봄의 풍물시. 에도~쇼와 시대 인형이 전시됩니다.",
+        event_detail_1: "개최 시기: 2월 중순~3월 하순 무렵\n주요 장소: 마메다마치, 쿠마마치 주변의 옛 가옥과 자료관\n볼거리: 상가에 전해져 온 히나 인형과 장식품을 역사적인 거리와 함께 즐길 수 있습니다. 마메다 거리를 천천히 걸으며 둘러보기 좋습니다.\n방문 메모: 마메다마치는 길이 좁은 곳이 있어 도보 이동이 편합니다. 기념품 가게와 자료관도 함께 들르기 좋습니다.",
         event_2: "히타 카와비라키 관광제", event_desc_2: "규슈 최대 규모의 불꽃놀이를 포함한 히타 최대의 축제. 가마우지 낚시도 시작됩니다.",
+        event_detail_2: "개최 시기: 5월 하순 무렵\n주요 장소: 미쿠마강 주변, 히타 시내 중심부\n볼거리: 물의 고장 히타의 여름 시작을 알리는 큰 축제입니다. 퍼레이드, 강변 행사, 수면에 비치는 밤 불꽃놀이가 인기입니다.\n방문 메모: 불꽃놀이 날에는 도로와 주차장이 혼잡할 수 있습니다. 일찍 이동하거나 대중교통 이용을 고려하면 좋습니다.",
         event_3: "히타 기온 마츠리", event_desc_3: "300년 이상의 역사를 가진 유네스코 무형문화유산 축제. 화려한 야마보코가 행진합니다.",
+        event_detail_3: "개최 시기: 7월 하순 무렵\n주요 장소: 마메다 지구, 쿠마 지구\n볼거리: 화려한 야마보코가 거리를 도는 히타 대표 여름 축제입니다. 낮의 행진과 밤의 등불이 켜진 모습이 서로 다른 매력을 보여줍니다.\n방문 메모: 행진 구간은 붐빕니다. 사진 촬영은 통행과 행진에 방해되지 않는 위치에서 하는 것이 안전합니다.",
         event_4: "센넨아카리", event_desc_4: "마메다마치와 카게츠가와 주변을 약 3만 개의 대나무 등불이 수놓는 환상적인 가을 밤 이벤트.",
+        event_detail_4: "개최 시기: 11월 상순 무렵\n주요 장소: 마메다마치, 카게츠강 주변\n볼거리: 대나무 등불이 옛 거리와 강변을 밝히는 히타의 대표적인 가을밤 풍경입니다. 히타 텐료 마츠리와 함께 찾는 사람도 많습니다.\n방문 메모: 밤에는 발밑이 어두운 곳이 있습니다. 걷기 편한 신발을 신고, 촬영할 때도 주변 사람 흐름을 살피면 좋습니다.",
         total_dist: "총 거리", total_time: "총 시간", shelter_dist: "대피 거리", shelter_time: "예상 시간", thinking: "AI가 생각 중입니다...", error: "오류가 발생했습니다: ",
         gps_error: "현재지를 가져올 수 없습니다. 설정을 확인하십시오.",
         selection_reset: "선택 리셋",
@@ -997,12 +1017,22 @@ function updateList() {
 function showDetail(spot) {
     const btn = document.getElementById('modal-select-btn');
     btn.classList.remove('hidden');
+    btn.style.display = '';
     document.getElementById('detail-title').innerText = spot.スポット名;
     document.getElementById('detail-desc').innerText = spot.説明;
     const isSel = selectedSpots.some(s => s.No === spot.No);
     btn.innerText = currentMode === 'tourism' ? (isSel ? t('remove') : t('add_modal_tour')) : (isSel ? t('remove') : t('add_modal_dis'));
     btn.className = `w-full py-4 rounded-2xl text-sm font-bold shadow-lg ${isSel ? 'bg-disaster-500' : (currentMode==='tourism'?'bg-brand-500':'bg-disaster-600')} text-white`;
     btn.onclick = () => { toggleSelect(spot); closeModal(); };
+    document.getElementById('detail-modal').classList.remove('hidden');
+}
+
+function showEventDetail(eventNo) {
+    const btn = document.getElementById('modal-select-btn');
+    btn.style.display = 'none';
+    btn.onclick = null;
+    document.getElementById('detail-title').innerText = t('event_' + eventNo);
+    document.getElementById('detail-desc').innerText = t('event_detail_' + eventNo);
     document.getElementById('detail-modal').classList.remove('hidden');
 }
 
@@ -1138,7 +1168,18 @@ async function callGemini() {
 function renderEvents() {
     const pane = document.getElementById('pane-extra');
     pane.innerHTML = `<h3 class="text-brand-500 font-black text-sm mb-4 uppercase tracking-wider">${t('event').toUpperCase()}</h3>` + 
-        [1,2,3,4].map(i => `<div class="bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4"><h4 class="font-black text-slate-800 text-sm mb-1">${t('event_'+i)}</h4><p class="text-[10px] text-slate-500 leading-relaxed font-medium">${t('event_desc_'+i)}</p></div>`).join('');
+        [1,2,3,4].map(i => `
+            <div class="event-card bg-white p-5 rounded-[32px] border border-slate-100 shadow-sm mb-4 cursor-pointer active:scale-[0.98] transition-all" data-event-no="${i}">
+                <h4 class="font-black text-slate-800 text-sm mb-1">${t('event_'+i)}</h4>
+                <p class="text-[10px] text-slate-500 leading-relaxed font-medium mb-3">${t('event_desc_'+i)}</p>
+                <button class="w-full py-2.5 rounded-xl bg-brand-50 text-brand-500 border border-brand-100 text-[10px] font-bold transition-all hover:bg-brand-100">
+                    <i class="fas fa-circle-info mr-2"></i>${t('event_more')}
+                </button>
+            </div>`).join('');
+
+    pane.querySelectorAll('.event-card').forEach(card => {
+        card.onclick = () => showEventDetail(card.getAttribute('data-event-no'));
+    });
 }
 
 const disasterLinks = {
