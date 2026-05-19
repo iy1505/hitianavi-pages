@@ -15,6 +15,7 @@ let filterOpen = false;
 let userLocation = [33.3219, 130.9414];
 let selectedSpots = [];
 let userMarker;
+let eventVenueMarker;
 let lastSidebarDragAt = 0;
 let disasterStatus = {
     floodActive: false,
@@ -55,6 +56,12 @@ const i18n = {
         earthquake_warning_label: "地震時注意",
         earthquake_warning_detail: "この避難所は地震時に周辺道路、建物、土砂災害などの確認が必要な可能性があります。安全が確認できない場合は別の避難所も検討してください。",
         event_more: "詳しく見る",
+        event_nav: "開催地へ案内",
+        event_venue_label: "開催地",
+        event_venue_1: "豆田町・隈町周辺",
+        event_venue_2: "三隈川周辺",
+        event_venue_3: "豆田地区・隈地区",
+        event_venue_4: "豆田町・花月川周辺",
         event_1: "天領日田おひなまつり", event_desc_1: "豆田町一帯で雛人形を展示する春の風物詩。江戸〜昭和の雛人形が並びます。",
         event_detail_1: "開催時期: 2月中旬〜3月下旬ごろ\n主な場所: 豆田町・隈町周辺の旧家や資料館\n見どころ: 商家に受け継がれてきた雛人形や雛道具を、歴史ある町並みと一緒に楽しめます。草野本家、日本丸館、天領日田資料館などを歩いて巡るのがおすすめです。\n訪問メモ: 豆田町は道幅が細い場所があります。徒歩でゆっくり回ると、町並みや土産店にも立ち寄りやすくなります。",
         event_2: "日田川開き観光祭", event_desc_2: "九州最大級の花火大会を含む日田最大の祭り。三隈川で鵜飼いも始まります。",
@@ -96,6 +103,12 @@ const i18n = {
         earthquake_warning_label: "Earthquake caution",
         earthquake_warning_detail: "This shelter may require extra checks after an earthquake, such as nearby road, building, or landslide conditions. Consider another shelter if safety cannot be confirmed.",
         event_more: "Details",
+        event_nav: "Navigate to Venue",
+        event_venue_label: "Venue",
+        event_venue_1: "Mameda and Kuma area",
+        event_venue_2: "Mikuma River area",
+        event_venue_3: "Mameda and Kuma districts",
+        event_venue_4: "Mameda and Kagetsu River area",
         event_1: "Hita Ohina-matsuri", event_desc_1: "A spring tradition in Mameda town displaying doll collections from Edo to Showa eras.",
         event_detail_1: "Season: Around mid-February to late March\nMain area: Historic houses and museums around Mameda and Kuma\nHighlights: Doll collections and miniature furnishings are displayed inside old merchant houses and cultural facilities. It pairs especially well with a slow walk through Mameda's preserved streets.\nVisitor note: Mameda has narrow streets, so walking is usually the easiest way to enjoy shops, museums, and the townscape.",
         event_2: "Hita Kawabiraki Festival", event_desc_2: "Hita's largest festival featuring major fireworks and cormorant fishing on Mikuma river.",
@@ -137,6 +150,12 @@ const i18n = {
         earthquake_warning_label: "地震注意",
         earthquake_warning_detail: "该避难所周边在地震时可能需要确认道路、建筑物或泥石流等安全情况。如无法确认安全，请考虑其他避难所。",
         event_more: "查看详情",
+        event_nav: "导航到会场",
+        event_venue_label: "会场",
+        event_venue_1: "豆田町、隈町周边",
+        event_venue_2: "三隈川周边",
+        event_venue_3: "豆田地区、隈地区",
+        event_venue_4: "豆田町、花月川周边",
         event_1: "天领日田女儿节", event_desc_1: "豆田町一带展示江户至昭和时期女儿节人偶的春季特色活动。",
         event_detail_1: "举办时期: 约2月中旬至3月下旬\n主要地点: 豆田町、隈町周边的老宅和资料馆\n看点: 可以在历史街区中欣赏商家传承下来的女儿节人偶和精致道具。适合边散步边参观资料馆与店铺。\n参观提示: 豆田町有些道路较窄，步行游览更方便，也更容易顺路逛土产店。",
         event_2: "日田川开观光祭", event_desc_2: "日田最大的节日，包括九州最大规模的烟花大会和三隈川鸬鹚捕鱼。",
@@ -179,6 +198,12 @@ const i18n = {
         earthquake_warning_label: "지진 주의",
         earthquake_warning_detail: "이 대피소는 지진 시 주변 도로, 건물, 산사태 위험 등의 확인이 필요할 수 있습니다. 안전 확인이 어려우면 다른 대피소도 검토하세요.",
         event_more: "자세히 보기",
+        event_nav: "개최지로 안내",
+        event_venue_label: "개최지",
+        event_venue_1: "마메다마치, 쿠마마치 주변",
+        event_venue_2: "미쿠마강 주변",
+        event_venue_3: "마메다 지구, 쿠마 지구",
+        event_venue_4: "마메다마치, 카게츠강 주변",
         event_1: "텐료 히타 오히나마츠리", event_desc_1: "마메다마치 일대에서 히나 인형을 전시하는 봄의 풍물시. 에도~쇼와 시대 인형이 전시됩니다.",
         event_detail_1: "개최 시기: 2월 중순~3월 하순 무렵\n주요 장소: 마메다마치, 쿠마마치 주변의 옛 가옥과 자료관\n볼거리: 상가에 전해져 온 히나 인형과 장식품을 역사적인 거리와 함께 즐길 수 있습니다. 마메다 거리를 천천히 걸으며 둘러보기 좋습니다.\n방문 메모: 마메다마치는 길이 좁은 곳이 있어 도보 이동이 편합니다. 기념품 가게와 자료관도 함께 들르기 좋습니다.",
         event_2: "히타 카와비라키 관광제", event_desc_2: "규슈 최대 규모의 불꽃놀이를 포함한 히타 최대의 축제. 가마우지 낚시도 시작됩니다.",
@@ -195,6 +220,13 @@ const i18n = {
 };
 
 function t(key) { return i18n[currentLang][key] || key; }
+
+const EVENT_LOCATIONS = {
+    1: { lat: 33.3266, lng: 130.9388 },
+    2: { lat: 33.3138, lng: 130.9304 },
+    3: { lat: 33.3218, lng: 130.9349 },
+    4: { lat: 33.3281, lng: 130.9392 }
+};
 
 const apiHelpContent = {
     ja: {
@@ -1145,11 +1177,35 @@ function showDetail(spot) {
 
 function showEventDetail(eventNo) {
     const btn = document.getElementById('modal-select-btn');
-    btn.style.display = 'none';
-    btn.onclick = null;
+    btn.classList.remove('hidden');
+    btn.style.display = '';
     document.getElementById('detail-title').innerText = t('event_' + eventNo);
-    document.getElementById('detail-desc').innerText = t('event_detail_' + eventNo);
+    document.getElementById('detail-desc').innerText = `${t('event_detail_' + eventNo)}\n\n${t('event_venue_label')}: ${t('event_venue_' + eventNo)}`;
+    btn.innerText = t('event_nav');
+    btn.className = 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg bg-brand-500 text-white';
+    btn.onclick = () => navigateToEventVenue(eventNo);
     document.getElementById('detail-modal').classList.remove('hidden');
+}
+
+function navigateToEventVenue(eventNo) {
+    const loc = EVENT_LOCATIONS[Number(eventNo)];
+    if (!loc) return;
+    const title = t('event_' + eventNo);
+    const venue = t('event_venue_' + eventNo);
+    if (eventVenueMarker) map.removeLayer(eventVenueMarker);
+    eventVenueMarker = L.marker([loc.lat, loc.lng], {
+        icon: L.divIcon({
+            className: 'm-pin',
+            html: buildPinHtml({ color: '#1b4353', icon: 'fa-calendar-days' }, true),
+            iconSize: [42, 55],
+            iconAnchor: [21, 55]
+        })
+    }).addTo(map);
+    eventVenueMarker.bindPopup(`<strong>${escapeHtml(title)}</strong><br>${escapeHtml(venue)}`).openPopup();
+    map.flyTo([loc.lat, loc.lng], 15);
+    closeModal();
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation[0]},${userLocation[1]}&destination=${loc.lat},${loc.lng}&travelmode=walking`;
+    window.open(url, '_blank');
 }
 
 function closeModal() { document.getElementById('detail-modal').classList.add('hidden'); }
