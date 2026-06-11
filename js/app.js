@@ -416,9 +416,18 @@ async function loadAllData() {
 }
 
 function mapSpotRow(row) {
+    // Clean keys in the row object to handle potential spaces in column names
+    const cleanRow = {};
+    for (const key in row) {
+        if (Object.prototype.hasOwnProperty.call(row, key)) {
+            const cleanKey = key.toString().replace(/\s+/g, '').replace(/\u3000/g, '');
+            cleanRow[cleanKey] = row[key];
+        }
+    }
+
     const get = (keys) => {
         for (const key of keys) {
-            if (row[key] !== undefined && row[key] !== null) return row[key];
+            if (cleanRow[key] !== undefined && cleanRow[key] !== null) return cleanRow[key];
         }
         return undefined;
     };
@@ -433,13 +442,13 @@ function mapSpotRow(row) {
 
     return {
         No: parseInt(get(['No', 'no', 'ID', 'id'])) || 0,
-        スポット名: (get(['スポット名', 'Spot Name', 'Name', 'name', 'spot_name']) || "").toString().trim(),
+        スポット名: (get(['スポット名', 'SpotName', 'Name', 'name', 'spot_name']) || "").toString().trim(),
         カテゴリ: category || '観光地',
         緯度: lat,
         経度: lng,
         '所要時間（参考）': (get(['所要時間（参考）', 'Duration', 'time_ref']) || "").toString().trim(),
         説明: (get(['説明', 'Description', 'desc', 'description']) || "").toString().trim(),
-        待ち時間: parseInt(get(['待ち時間', 'Wait Time', 'wait'])) || 0,
+        待ち時間: parseInt(get(['待ち時間', 'WaitTime', 'wait'])) || 0,
         所要時間: parseInt(get(['所要時間（参考）', 'Duration'])) || 0,
         '営業時間': (get(['営業時間', 'Hours', 'hours']) || "終日").toString().trim(),
         '料金': (get(['料金', 'Fee', 'fee']) || "無料").toString().trim(),
@@ -1271,7 +1280,7 @@ function optimizeRoute() {
         totalTime += (d * travelSpeed); 
         pos = [n.緯度, n.経度];
     }
-    const h = Math.floor(totalTime / 60), m = Math.round(totalTime % 60);
+    const h = Math.floor(totalTime / 60), m = Math.ceil(totalTime % 60);
     const timeStr = h > 0 ? `${h}${currentLang==='ja'?'時間':'h'}${m}${currentLang==='ja'?'分':'m'}` : `${m}${currentLang==='ja'?'分':'m'}`;
     
     const stats = document.getElementById('route-stats');
@@ -1334,18 +1343,23 @@ async function callGemini() {
         let spotContext = "";
         if (currentMode === 'tourism') {
             const data = allData[currentLang].tourism || [];
-            // Send up to 20 relevant spots to keep prompt size manageable
-            const relevantSpots = data.slice(0, 30).map(s => {
-                return `${s.スポット名}(${s.カテゴリ}): ${s.説明.slice(0, 50)}... [スコア: 景観${s.景観度}, 落ち着き${s.落ち着ける度}, 賑やか${s.賑やか度}, 子供向け${s.子供向け度}, 映え${s.インスタ映え度}, 歴史文化${s.歴史・文化度}, アクセス${s.アクセス度}, 非日常${s.非日常度}, 体験${s.体験度}, コスパ${s.コスパ度}]`;
+            // Ensure selected spots are included in the context even if not in top 30
+            const selectedSet = new Set(selectedSpots.map(s => s.No));
+            const prioritySpots = data.filter(s => selectedSet.has(s.No));
+            const otherSpots = data.filter(s => !selectedSet.has(s.No)).slice(0, 30);
+            
+            const contextSpots = [...prioritySpots, ...otherSpots];
+            const spotDescriptions = contextSpots.map(s => {
+                return `${s.スポット名}(${s.カテゴリ}): ${s.説明.slice(0, 60)}... [スコア: 景観${s.景観度}, 落ち着き${s.落ち着ける度}, 賑やか${s.賑やか度}, 子供向け${s.子供向け度}, 映え${s.インスタ映え度}, 歴史文化${s.歴史・文化度}, アクセス${s.アクセス度}, 非日常${s.非日常度}, 体験${s.体験度}, コスパ${s.コスパ度}]`;
             }).join('\n');
-            spotContext = `\n利用可能な観光スポット候補:\n${relevantSpots}\n`;
+            spotContext = `\n利用可能な観光スポット候補:\n${spotDescriptions}\n`;
         }
 
         const prompt = currentMode === 'tourism'
             ? `日田市の観光コンシェルジュとして、以下のスポット情報を参考に最適な観光プランを提案してください。各スコアは0-10点（未設定は0）で、点数が高いほどその傾向が強いことを示します。ユーザーの希望条件に最も合うスポットを優先的に組み込んでください。\n\n言語: ${currentLang}\n興味: ${interests.join(', ')}\n要望: ${req}\n滞在時間: ${in1}\n予算: ${in2}\n選択中のスポット: ${selectedSpots.map(s=>s.スポット名).join(', ')}${spotContext}`
             : `日田市での災害備蓄・防災グッズについてアドバイスしてください。\n言語: ${currentLang}\n備えたい分野: ${interests.join(', ')}\n要望: ${req}\n家族構成: ${in1}\n予算: ${in2}`;
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${key}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
