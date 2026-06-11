@@ -442,7 +442,17 @@ function mapSpotRow(row) {
         待ち時間: parseInt(get(['待ち時間', 'Wait Time', 'wait'])) || 0,
         所要時間: parseInt(get(['所要時間（参考）', 'Duration'])) || 0,
         '営業時間': (get(['営業時間', 'Hours', 'hours']) || "終日").toString().trim(),
-        '料金': (get(['料金', 'Fee', 'fee']) || "無料").toString().trim()
+        '料金': (get(['料金', 'Fee', 'fee']) || "無料").toString().trim(),
+        '景観度': parseInt(get(['景観度'])) || 0,
+        '落ち着ける度': parseInt(get(['落ち着ける度'])) || 0,
+        '賑やか度': parseInt(get(['賑やか度'])) || 0,
+        '子供向け度': parseInt(get(['子供向け度'])) || 0,
+        'インスタ映え度': parseInt(get(['インスタ映え度'])) || 0,
+        '歴史・文化度': parseInt(get(['歴史・文化度'])) || 0,
+        'アクセス度': parseInt(get(['アクセス度'])) || 0,
+        '非日常度': parseInt(get(['非日常度'])) || 0,
+        '体験度': parseInt(get(['体験度'])) || 0,
+        'コスパ度': parseInt(get(['コスパ度'])) || 0
     };
 }
 
@@ -1254,7 +1264,12 @@ function optimizeRoute() {
         const n = unvisited.splice(nextI, 1)[0];
         route.push(n);
         const d = calculateDistance(pos[0], pos[1], n.緯度, n.経度);
-        dist += d; totalTime += (d * 15) + (n.所要時間 || 0); pos = [n.緯度, n.経度];
+        dist += d; 
+        // 合計時間は移動時間のみを表示するように変更 (所要時間は含めない)
+        // 観光モードは車(約5分/km)、防災モードは徒歩(約12分/km)で計算
+        const travelSpeed = currentMode === 'tourism' ? 5 : 12;
+        totalTime += (d * travelSpeed); 
+        pos = [n.緯度, n.経度];
     }
     const h = Math.floor(totalTime / 60), m = Math.round(totalTime % 60);
     const timeStr = h > 0 ? `${h}${currentLang==='ja'?'時間':'h'}${m}${currentLang==='ja'?'分':'m'}` : `${m}${currentLang==='ja'?'分':'m'}`;
@@ -1316,8 +1331,18 @@ async function callGemini() {
         const in1 = document.getElementById('ai-input-1').value;
         const in2 = document.getElementById('ai-input-2').value;
 
+        let spotContext = "";
+        if (currentMode === 'tourism') {
+            const data = allData[currentLang].tourism || [];
+            // Send up to 20 relevant spots to keep prompt size manageable
+            const relevantSpots = data.slice(0, 30).map(s => {
+                return `${s.スポット名}(${s.カテゴリ}): ${s.説明.slice(0, 50)}... [スコア: 景観${s.景観度}, 落ち着き${s.落ち着ける度}, 賑やか${s.賑やか度}, 子供向け${s.子供向け度}, 映え${s.インスタ映え度}, 歴史文化${s.歴史・文化度}, アクセス${s.アクセス度}, 非日常${s.非日常度}, 体験${s.体験度}, コスパ${s.コスパ度}]`;
+            }).join('\n');
+            spotContext = `\n利用可能な観光スポット候補:\n${relevantSpots}\n`;
+        }
+
         const prompt = currentMode === 'tourism'
-            ? `日田市の観光プランを提案してください。\n言語: ${currentLang}\n興味: ${interests.join(', ')}\n要望: ${req}\n滞在時間: ${in1}\n予算: ${in2}\n選択中のスポット: ${selectedSpots.map(s=>s.スポット名).join(', ')}`
+            ? `日田市の観光コンシェルジュとして、以下のスポット情報を参考に最適な観光プランを提案してください。各スコアは0-10点（未設定は0）で、点数が高いほどその傾向が強いことを示します。ユーザーの希望条件に最も合うスポットを優先的に組み込んでください。\n\n言語: ${currentLang}\n興味: ${interests.join(', ')}\n要望: ${req}\n滞在時間: ${in1}\n予算: ${in2}\n選択中のスポット: ${selectedSpots.map(s=>s.スポット名).join(', ')}${spotContext}`
             : `日田市での災害備蓄・防災グッズについてアドバイスしてください。\n言語: ${currentLang}\n備えたい分野: ${interests.join(', ')}\n要望: ${req}\n家族構成: ${in1}\n予算: ${in2}`;
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
