@@ -36,6 +36,8 @@ const i18n = {
         sort_dist: "現在地から近い順", sort_cat: "カテゴリ順", sort_name: "名前順",
         filter_1km: "1km以内", filter_open: "営業中",
         gmaps_tour: "Googleマップで出発", gmaps_dis: "Googleマップで避難開始", ai_tour_title: "AI観光ガイド", ai_dis_title: "AI防災グッズ相談",
+        ai_desc_tour: "選択中のスポットも含めて、最適な観光内容やルートを提案します。",
+        ai_desc_dis: "ご家族構成や予算に合わせ、必要な備えをアドバイスします。",
         ai_in1_tour: "滞在時間", ai_in1_dis: "家族構成 (例: 大人2人)", ai_in2_tour: "予算", ai_in2_dis: "予算 (備蓄用)",
         ai_btn_tour: "AIにおまかせプラン作成", ai_btn_dis: "必要な備えを聞く", ai_req: "その他の要望", ai_req_tour: "例: 子供連れ、映える場所など",
         go_here: "ここへ行く", go_dis: "ここへ避難する", remove: "消す", add_modal_tour: "ここへ行く場所に追加", add_modal_dis: "ここを避難先に選ぶ",
@@ -82,6 +84,8 @@ const i18n = {
         sort_dist: "Nearest First", sort_cat: "By Category", sort_name: "By Name",
         filter_1km: "Within 1km", filter_open: "Open Now",
         gmaps_tour: "Start in Google Maps", gmaps_dis: "Navigate to Shelter", ai_tour_title: "AI Tourism Guide", ai_dis_title: "AI Disaster Prep",
+        ai_desc_tour: "Suggestions include your selected spots for the best route and activities.",
+        ai_desc_dis: "Get advice on essential supplies based on your family and budget.",
         ai_in1_tour: "Stay duration", ai_in1_dis: "Family (e.g. 2 adults)", ai_in2_tour: "Budget", ai_in2_dis: "Stockpile budget",
         ai_btn_tour: "Generate AI Plan", ai_btn_dis: "Ask AI for Essentials", ai_req: "Other requests", ai_req_tour: "e.g. kids friendly, photo spots",
         go_here: "Go Here", go_dis: "Evacuate Here", remove: "Remove", add_modal_tour: "Add to itinerary", add_modal_dis: "Set as shelter",
@@ -129,6 +133,8 @@ const i18n = {
         sort_dist: "离我最近", sort_cat: "按类别", sort_name: "按名称",
         filter_1km: "1公里以内", filter_open: "营业中",
         gmaps_tour: "开始导航", gmaps_dis: "开始避难", ai_tour_title: "AI 旅游指南", ai_dis_title: "AI 防灾咨询",
+        ai_desc_tour: "建议包含您选择的景点，为您规划最佳路线和行程。",
+        ai_desc_dis: "根据您的家庭构成和预算，为您提供必要的防灾建议。",
         ai_in1_tour: "停留时间", ai_in1_dis: "家庭构成 (如: 2名成人)", ai_in2_tour: "预算", ai_in2_dis: "备货预算",
         ai_btn_tour: "生成 AI 方案", ai_btn_dis: "咨询防灾用品", ai_req: "其他要求", ai_req_tour: "例如: 亲子游, 适合拍照",
         go_here: "去这里", go_dis: "去避难", remove: "删除", add_modal_tour: "加入行程", add_modal_dis: "选择为避难所",
@@ -176,6 +182,8 @@ const i18n = {
         sort_dist: "현재지에서 가까운 순", sort_cat: "카테고리 순", sort_name: "이름 순",
         filter_1km: "1km 이내", filter_open: "영업 중",
         gmaps_tour: "Google 맵으로 출발", gmaps_dis: "Google 맵으로 대피 시작", ai_tour_title: "AI 관광 가이드", ai_dis_title: "AI 방재 용품 상담",
+        ai_desc_tour: "선택한 장소를 포함하여 최적의 관광 내용과 루트를 제안합니다.",
+        ai_desc_dis: "가족 구성과 예산에 맞춰 필요한 대비법을 조언해 드립니다.",
         ai_in1_tour: "체류 시간", ai_in1_dis: "가족 구성 (예: 성인 2명)", ai_in2_tour: "예산", ai_in2_dis: "예산 (비축용)",
         ai_btn_tour: "AI 추천 플랜 작성", ai_btn_dis: "필요한 대비 묻기", ai_req: "기타 요청", ai_req_tour: "예: 아이 동반, 사진 찍기 좋은 곳 등",
         go_here: "여기로 가기", go_dis: "여기로 대피하기", remove: "삭제", add_modal_tour: "일정에 추가", add_modal_dis: "대피처로 선택",
@@ -938,6 +946,7 @@ function updateUI() {
 
 function setupTourismAIUI() {
     document.getElementById('ai-title-text').innerText = t('ai_tour_title');
+    document.getElementById('ai-description-text').innerText = t('ai_desc_tour');
     document.getElementById('ai-input-1').placeholder = t('ai_in1_tour');
     document.getElementById('ai-input-2').placeholder = t('ai_in2_tour');
     document.getElementById('ai-request').placeholder = t('ai_req_tour');
@@ -961,6 +970,7 @@ function setupTourismAIUI() {
 
 function setupDisasterAIUI() {
     document.getElementById('ai-title-text').innerText = t('ai_dis_title');
+    document.getElementById('ai-description-text').innerText = t('ai_desc_dis');
     document.getElementById('ai-input-1').placeholder = t('ai_in1_dis');
     document.getElementById('ai-input-2').placeholder = t('ai_in2_dis');
     document.getElementById('ai-request').placeholder = t('ai_req');
